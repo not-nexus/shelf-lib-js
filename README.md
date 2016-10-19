@@ -41,14 +41,34 @@ Example:
             console.log(contents);
         });
 
+        // Creates the mutable metadata property "tag" with value "Taggy-tag".
+        artifact.metadata.createProperty("tag", {value: "Taggy-tag"}).then((response) => {
+            console.log(response);
+        });
+
+        // Creates the immutable metadata property "tag1" with value "Tag-taggy".
+        artifact.metadata.createProperty("tag1", {immutable: true, value: "Tag-taggy"}).then((response) => {
+            console.log(response);
+        });
+
+        // Updates the metadata property "tag" with value "Data".
+        artifact.metadata.updateProperty("tag", {value: "Data"}).then((response) => {
+            console.log(response);
+        });
+
+        // Deletes the metadata property "tag"
+        artifact.metadata.deleteProperty("tag").then((response) => {
+            console.log(response);
+        });
+
         // Get all of the artifact's metadata.
         artifact.metadata.getAll().then((metadata) => {
             console.log(metadata);
         });
 
         // Get one property of the artifact's metadata.
-        artifact.metadata.getProperty("md5Hash").then((md5Hash) => {
-            console.log(md5Hash);
+        artifact.metadata.getProperty("tag1").then((property) => {
+            console.log(property);
         });
     });
 
