@@ -31,9 +31,6 @@
     "mock-require": "^1.3.0"
   },
   "dependencies": {
-    "bluebird": "latest",
-    "crypto": "latest",
-    "curry": "latest",
     "docopt": "latest",
     "log": "latest",
     "request": "latest",
