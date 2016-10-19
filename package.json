@@ -1,0 +1,43 @@
+{
+  "name": "shelf-lib-js",
+  "version": "0.0.1",
+  "description": "Library that allows the user to interact with Shelf.",
+  "main": "./lib/app.js",
+  "scripts": {
+    "start": "./bin/app.js \"$@\" || true",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoogilyBoogily/shelf-lib-js.git"
+  },
+  "author": "Derek Mayer",
+  "contributors": [
+    {
+      "name": "Derek Mayer",
+      "email": "derekjmayer@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GoogilyBoogily/shelf-lib-js/issues"
+  },
+  "homepage": "https://github.com/GoogilyBoogily/shelf-lib-js#readme",
+  "devDependencies": {
+    "codecov": "^1.0.1",
+    "eslint": "^2.10.2",
+    "istanbul": "^0.4.2",
+    "jasmine-node": "^1.14.5",
+    "mock-require": "^1.3.0"
+  },
+  "dependencies": {
+    "bluebird": "latest",
+    "crypto": "latest",
+    "curry": "latest",
+    "docopt": "latest",
+    "log": "latest",
+    "request": "latest",
+    "request-promise": "^4.1.1",
+    "urijs": "latest"
+  }
+}
