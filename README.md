@@ -26,6 +26,9 @@ Example:
     // Import the library.
     var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>");
 
+    // Or, if you want verbose logging on the library
+    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", true);
+
     // Grab a reference to a bucket.
     var reference = shelfLib.reference("refName", "<super secret pyshelf API key>");
 
