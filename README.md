@@ -26,7 +26,7 @@ Example:
     // Import the library.
     var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>");
 
-    // Or, if you want verbose logging on the library
+    // Or, if you want verbose logging on the library:
     // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", true);
 
     // Grab a reference to a bucket.
@@ -34,6 +34,9 @@ Example:
 
     // Grab the artifact reference at location "/path".
     var artifact = reference.getArtifact("path");
+
+    // Or, if you want to get a reference with a unique URL:
+    var artifact = reference.getArtifact("path", true);
 
     // Upload data to the artifact at "/path".
     artifact.upload("Hello data!").then((response) => {
