@@ -2,9 +2,8 @@
     "name": "shelf-lib-js",
     "version": "1.0.0",
     "description": "A library that allows the user to interact with Shelf.",
-    "main": "./lib/app.js",
+    "main": "./lib/index.js",
     "scripts": {
-        "start": "./bin/app.js \"$@\" || true",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {

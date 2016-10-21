@@ -27,10 +27,10 @@ Example:
     var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>");
 
     // Or, if you want verbose logging on the library:
-    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", true);
+    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", "debug");
 
     // Grab a reference to a bucket.
-    var reference = shelfLib.reference("refName", "<super secret pyshelf API key>");
+    var reference = shelfLib.getReference("refName", "<super secret pyshelf API key>");
 
     // Grab the artifact reference at location "/path".
     var artifact = reference.getArtifact("path");
