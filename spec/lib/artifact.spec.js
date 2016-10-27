@@ -1,16 +1,13 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authTokenMock, bluebird, content, dateServiceMock, instance, loggerMock, requestOptionsMock, requestPromiseMock, responseHandlerMock, uriMock;
+    var Artifact, authTokenMock, content, dateServiceMock, instance, loggerMock, requestOptionsMock, requestPromiseMock, responseHandlerMock, uriMock;
 
     authTokenMock = "abcd1234";
-    bluebird = require("bluebird");
     dateServiceMock = jasmine.createSpyObj("dateServiceMock", [
         "now"
     ]);
-    loggerMock = jasmine.createSpyObj("loggerMock", [
-        "debug"
-    ]);
+    loggerMock = require("../mock/logger-mock.js")();
 
     /**
      * A mock Metadata class.
@@ -25,20 +22,10 @@ describe("lib/artifact", () => {
             this.uri = uri;
         }
     }
-    requestOptionsMock = jasmine.createSpyObj("requestOptionsMock", [
-        "createOptions"
-    ]);
-    requestOptionsMock.createOptions.andReturn({});
-    requestPromiseMock = jasmine.createSpyObj("requestPromiseMock", [
-        "get",
-        "post"
-    ]);
-    requestPromiseMock.post.andReturn(bluebird.resolve({}));
-    requestPromiseMock.get.andReturn(bluebird.resolve({}));
-    responseHandlerMock = jasmine.createSpyObj("responseHandlerMock", [
-        "handleArtifactResponse"
-    ]);
-    responseHandlerMock.handleArtifactResponse.andReturn(bluebird.resolve({}));
+
+    requestOptionsMock = require("../mock/request-options-mock")();
+    requestPromiseMock = require("../mock/request-promise-mock")();
+    responseHandlerMock = require("../mock/response-handler-mock")();
     uriMock = "www.example.com";
     Artifact = require("../../lib/artifact")(dateServiceMock, loggerMock, requestOptionsMock, requestPromiseMock, responseHandlerMock, MetadataMock);
 
@@ -63,7 +50,7 @@ describe("lib/artifact", () => {
                 instance[test.fn](content);
                 expect(requestOptionsMock.createOptions).toHaveBeenCalled();
             });
-            it("calls requestPromise.post() with the options", () => {
+            it(`calls requestPromise.${test.verb}()`, () => {
                 instance[test.fn](content);
                 expect(requestPromiseMock[test.verb]).toHaveBeenCalled();
             });
