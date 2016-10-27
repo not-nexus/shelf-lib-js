@@ -26,17 +26,20 @@ Example:
     // Import the library.
     var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>");
 
-    // Or, if you want verbose logging on the library:
-    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", "debug");
+    // Or, you can pass in an options object:
+    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", {
+            logLevel: "debug",          // Sets the desired amount of logging.
+                                        // Values can be: "info", "debug", or "warning".
+                                        // Defaults to "warning".
+            "strictHostCheck": false    // Turns off request strictHostCheck.
+                                        // Defaults to true.
+        });
 
     // Grab a reference to a bucket.
-    var reference = shelfLib.getReference("refName", "<super secret pyshelf API key>");
+    var reference = shelfLib.initReference("refName", "<super secret pyshelf API key>");
 
     // Grab the artifact reference at location "/path".
-    var artifact = reference.getArtifact("path");
-
-    // Or, if you want to get a reference with a unique URL:
-    var artifact = reference.getArtifact("path", true);
+    var artifact = reference.initArtifact("path");
 
     // Upload data to the artifact at "/path".
     artifact.upload("Hello data!").then((response) => {
