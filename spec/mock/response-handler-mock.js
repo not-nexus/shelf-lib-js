@@ -6,9 +6,11 @@ module.exports = () => {
     bluebird = require("bluebird");
     mock = jasmine.createSpyObj("responseHandlerMock", [
         "handleArtifactResponse",
+        "handleArtifactSearchResponse",
         "handleMetadataResponse"
     ]);
     mock.handleArtifactResponse.andReturn(bluebird.resolve({}));
+    mock.handleArtifactSearchResponse.andReturn(bluebird.resolve({}));
     mock.handleMetadataResponse.andReturn(bluebird.resolve({}));
 
     return mock;
