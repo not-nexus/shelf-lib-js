@@ -27,13 +27,14 @@ Example:
     var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>");
 
     // Or, you can pass in an options object:
-    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", {
+    // var libOptions = {
             logLevel: "debug",          // Sets the desired amount of logging.
                                         // Values can be: "info", "debug", or "warning".
                                         // Defaults to "warning".
             "strictHostCheck": false    // Turns off request strictHostCheck.
                                         // Defaults to true.
-        });
+        };
+    // var shelfLib = require("./lib/app")("<URL where pyshelf is hosted>", libOptions);
 
     // Grab a reference to a bucket.
     var reference = shelfLib.initReference("refName", "<super secret pyshelf API key>");
