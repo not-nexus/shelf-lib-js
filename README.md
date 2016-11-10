@@ -30,7 +30,7 @@ Options
 
 The second parameter when requiring the library is an object holding various options that can change the behavior of the library.
 
-* `logLevel` - Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning"
+* `logLevel` - Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". WARNING: If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril.
 * `strictHostCheck` - Turns off request strictHostCheck. This defaults to `true`.
 
 Example:
@@ -200,9 +200,17 @@ In order to search for an artifact, you need to first create an ArtifactSearch i
 
     var artifactSearch = reference.createSearch("pathy/");
 
-Then you can perform the search with your desired query (first parameter) and sorting (second parameter):
+Then you must construct an object with your search parameters.
 
-    artifactSearch.search("artifactName=*", "version, VERSION").then((results) => {
+    var searchParameters = {
+        search: "artifactName=*",   // Can be a string, an array of strings, or can also be undefined.
+        sort: "version, VERSION",
+        limit: 3
+    };
+
+Finally, you can perform the search with your constructed parameters:
+
+    artifactSearch.search(searchParameters).then((results) => {
         console.log(results);
     }, (err) => {
         console.log("Hit an error: " + err);
