@@ -203,9 +203,9 @@ In order to search for an artifact, you need to first create an ArtifactSearch i
 Then you must construct an object with your search parameters.
 
     var searchParameters = {
-        search: "artifactName=*",   // Can be a string, an array of strings, or can also be undefined.
-        sort: "version, VERSION",
-        limit: 3
+        search: "artifactName=*",   // Can be a string, an array of strings, or can also be undefined (optional).
+        sort: "version, VERSION",   // Can be a string or undefined (optional).
+        limit: 3                    // Can be a number or undefined (optional).
     };
 
 Finally, you can perform the search with your constructed parameters:
