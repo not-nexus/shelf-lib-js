@@ -1,5 +1,5 @@
 {
-    "name": "shelf-lib-js",
+    "name": "shelf-lib",
     "version": "1.0.0",
     "description": "A library that allows the user to interact with Shelf.",
     "main": "./lib/index.js",
@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/GoogilyBoogily/shelf-lib-js.git"
+        "url": "git+https://github.com/not-nexus/shelf-lib-js.git"
     },
     "author": "Derek Mayer",
     "contributors": [
@@ -20,9 +20,9 @@
     ],
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/GoogilyBoogily/shelf-lib-js/issues"
+        "url": "https://github.com/not-nexus/shelf-lib-js/issues"
     },
-    "homepage": "https://github.com/GoogilyBoogily/shelf-lib-js#readme",
+    "homepage": "https://github.com/not-nexus/shelf-lib-js#readme",
     "devDependencies": {
         "codecov": "^1.0.1",
         "eslint": "^2.10.2",
