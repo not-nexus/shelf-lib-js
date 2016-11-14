@@ -5,7 +5,7 @@ shelf-lib-js
 Introduction
 ------------
 
-shelf-lib-js is a Node.js library for using pyshelf[https://github.com/kyle-long/pyshelf].
+shelf-lib-js is a Node.js library for using (shelf)[https://github.com/not-nexus/shelf].
 
 
 Installation
