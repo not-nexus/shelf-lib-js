@@ -20,4 +20,8 @@ describe("lib/logger", () => {
             factory("DEFCON1");
         }).toThrow();
     });
+    it("sets logLevel to debug", () => {
+        logger = factory("debug");
+        expect(logger.level).toBe(7);
+    });
 });

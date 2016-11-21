@@ -1,12 +1,12 @@
 "use strict";
 
 describe("lib/requestOptions", () => {
-    var authToken, libOptions, loggerMock, options, requestOptionsFactory;
+    var authToken, libOptions, logger, options, requestOptionsFactory;
 
     authToken = "abcd1234";
-    loggerMock = require("../mock/logger-mock")();
+    logger = require("../../lib/logger")();
     requestOptionsFactory = () => {
-        return require("../../lib/request-options")(loggerMock, libOptions);
+        return require("../../lib/request-options")(libOptions, logger);
     };
 
     describe(".createOptions()", () => {
@@ -26,9 +26,8 @@ describe("lib/requestOptions", () => {
                 headers: {
                     Authorization: "abcd1234"
                 },
-                json: true,
                 resolveWithFullResponse: true,
-                simple: false
+                timeout: 1000
             });
         });
     });

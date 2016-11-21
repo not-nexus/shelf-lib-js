@@ -5,15 +5,15 @@ shelf-lib-js
 Introduction
 ------------
 
-shelf-lib-js is a Node.js library for using pyshelf[https://github.com/kyle-long/pyshelf].
+shelf-lib-js is a Node.js library for using [shelf](https://github.com/not-nexus/shelf).
 
 
 Installation
 ------------
 
 To install shelf-lib-js for development, run the following commands:
-    
-    git clone https://github.com/GoogilyBoogily/shelf-lib-js.git
+
+    git clone https://github.com/not-nexus/shelf-lib-js.git
     cd shelf-lib-js
     npm install
 
@@ -80,7 +80,7 @@ To upload an artifact from a file:
     });
 
 Or:
-    
+
     var fileReadStream = fs.createReadStream("./file-to-upload.txt");
 
     artifact.uploadFromFile(fileReadStream).then((uploadLocation) => {
@@ -110,7 +110,7 @@ To upload an artifact from a file:
     });
 
 Or:
-    
+
     var fileReadStream = fs.createReadStream("./file-with-artifact-contents.txt");
 
     artifact.downloadToFile(fileReadStream).then((downloadLocation) => {

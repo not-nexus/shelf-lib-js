@@ -1,17 +1,15 @@
 "use strict";
 
 module.exports = () => {
-    var bluebird, mock;
+    var mock;
 
-    bluebird = require("bluebird");
     mock = jasmine.createSpyObj("responseHandlerMock", [
-        "handleArtifactResponse",
-        "handleArtifactSearchResponse",
-        "handleMetadataResponse"
+        "createErrorForResponse",
+        "handleErrorResponse",
+        "isErrorCode",
+        "resolveLink",
+        "resolveLinkHeaders"
     ]);
-    mock.handleArtifactResponse.andReturn(bluebird.resolve({}));
-    mock.handleArtifactSearchResponse.andReturn(bluebird.resolve({}));
-    mock.handleMetadataResponse.andReturn(bluebird.resolve({}));
 
     return mock;
 };
