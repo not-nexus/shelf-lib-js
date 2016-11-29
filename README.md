@@ -198,7 +198,7 @@ Searching
 
 In order to search for an artifact, you need to first create an ArtifactSearch instance with the path you want to preform the search on.
 
-    var artifactSearch = reference.createSearch("pathy/");
+    var artifactSearch = reference.initSearch("pathy/");
 
 Then you must construct an object with your search parameters.
 
