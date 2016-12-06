@@ -141,7 +141,6 @@ describe("lib/artifact", () => {
                         Authorization: "abcd1234"
                     },
                     resolveWithFullResponse: true,
-                    timeout: 1000,
                     json: true,
                     url: "http://api.gisnep.example.com"
                 });
