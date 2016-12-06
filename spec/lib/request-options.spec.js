@@ -26,8 +26,7 @@ describe("lib/requestOptions", () => {
                 headers: {
                     Authorization: "abcd1234"
                 },
-                resolveWithFullResponse: true,
-                timeout: 1000
+                resolveWithFullResponse: true
             });
         });
     });
