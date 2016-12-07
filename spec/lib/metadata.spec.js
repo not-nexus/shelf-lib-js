@@ -30,7 +30,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta"
             }
@@ -45,7 +44,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName"
             }
@@ -60,7 +58,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta",
                 body: "paramMetadata"
@@ -77,7 +74,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName",
                 body: "paramProperty"
@@ -94,7 +90,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName",
                 body: "paramMetadata"
@@ -110,7 +105,6 @@ describe("lib/metadata", () => {
                     Authorization: "abcd1234"
                 },
                 resolveWithFullResponse: true,
-                timeout: 1000,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName"
             }

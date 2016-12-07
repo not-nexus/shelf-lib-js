@@ -3,7 +3,7 @@
 describe("lib/logger", () => {
     var factory, Log, logger, ShelfError;
 
-    Log = require("Log");
+    Log = require("log");
     ShelfError = require("../../lib/shelf-error")();
     factory = (logLevel) => {
         return require("../../lib/logger")(ShelfError, logLevel);
