@@ -15,7 +15,13 @@
     "contributors": [
         {
             "name": "Derek Mayer",
-            "email": "mayerderekj@gmail.com"
+            "email": "mayerderekj@gmail.com",
+            "github": "GoogilyBoogily"
+        },
+        {
+            "name": "Lucas Nagle",
+            "email": "lnagle@gmail.com",
+            "github": "lnagle93"
         }
     ],
     "license": "MIT",
