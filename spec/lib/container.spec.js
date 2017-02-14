@@ -1,4 +1,8 @@
 "use strict";
+var error, ShelfError;
+
+error = require("../../lib/error")();
+ShelfError = require("../../lib/shelf-error")();
 
 describe("lib/container", () => {
     var container, host, libOptions;
@@ -8,7 +12,7 @@ describe("lib/container", () => {
         logLevel: "info"
     };
     beforeEach(() => {
-        container = require("../../lib/container")(host, libOptions);
+        container = require("../../lib/container")(error, host, ShelfError, libOptions);
     });
     it("returns an object", () => {
         expect(container).toEqual(jasmine.any(Object));

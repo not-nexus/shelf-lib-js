@@ -44,7 +44,7 @@ Example:
                                     // Defaults to true.
     };
 
-    var shelfLib = require("shelf-lib")("<URL where pyshelf is hosted>", libOptions);
+    var shelfLib = require("shelf-lib")("<URL where shelf is hosted>", libOptions);
 
 
 Reference Creation
@@ -104,8 +104,8 @@ To download the contents and receive it in a variable:
 
 To upload an artifact from a file:
 
-    artifact.downloadToFile("./file-with-artifact-contents.txt").then((downloadLocation) => {
-        console.log("Downloaded contents to: " + downloadLocation);
+    artifact.uploadFromFile("./file-with-artifact-contents.txt").then((uploadLocation) => {
+        console.log("Uploaded contents to: " + downloadLocation);
     }, (err) => {
         console.log("Hit an error: " + err);
     });
@@ -216,3 +216,28 @@ Finally, you can perform the search with your constructed parameters:
     }, (err) => {
         console.log("Hit an error: " + err);
     });
+
+
+Errors
+------
+
+Shelf Lib will reject with special `ShelfError` errors. These inherit from `Error` so they can either be treated generically or if you would like to programmatically code against specific errors you can use the `error` and `ShelfError` properties on the Shelf Lib constructor. For example
+
+    var artifact, shelfLibConstructor, shelfLib, ref;
+
+    shelfLibConstructor = require("shelf-lib");
+    shelfLib = shelfLibConstructor("https://api.shelf.com");
+    ref = shelfLib.initReference("fake", "INVALID_TOKEN");
+    artifact = ref.initArtifact("/fake/path");
+
+    artifact.upload("fake contents").then(() => {
+        console.log("Everything uploaded fine.");
+    }, (err) => {
+        if (err.code == shelfLibConstructor.error.UNAUTHORIZED) {
+            console.log("Our token was invalid");
+        } else {
+            throw err;
+        }
+    });
+
+For more information see the [error module](https://github.com/not-nexus/shelf-lib-js/blob/master/lib/error.js).
