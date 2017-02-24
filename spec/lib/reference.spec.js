@@ -7,6 +7,8 @@ describe("lib/reference", () => {
     dateService = require("../../lib/date-service")();
     hostMock = "exampleHost";
     logger = require("../../lib/logger")();
+    error = require("../../lib/error")();
+    ShelfError = require("../../lib/shelf-error")();
     path = "some/example/path";
     refName = "exampleRefName";
     requestPromiseMock = require("../mock/request-promise-mock")();
@@ -14,11 +16,34 @@ describe("lib/reference", () => {
     Metadata = require("../../lib/metadata")(bluebird, error, logger, requestOptions, requestPromiseMock, responseHandler, ShelfError);
     Artifact = require("../../lib/artifact")(bluebird, fs, logger, request, requestOptions, requestPromiseMock, responseHandler, Metadata);
     ArtifactSearch = require("../../lib/artifact-search")(bluebird, error, logger, requestOptions, responseHandler, ShelfError, URI);
-    Reference = require("../../lib/reference")(Artifact, ArtifactSearch, dateService, logger, hostMock, requestPromiseMock, URI);
+    Reference = require("../../lib/reference")(Artifact, ArtifactSearch, dateService, error, logger, hostMock, requestPromiseMock, ShelfError, URI);
+
+    /**
+     * Makes sure an error happens while constructing a reference.
+     *
+     * @param {string} referenceName
+     * @param {string} authenticationToken
+     */
+    function runErrorConstructor(referenceName, authenticationToken) {
+        try {
+            new Reference(referenceName, authenticationToken); // eslint-disable-line no-new
+            jasmine.fail("Was expectint an error to be thrown");
+        } catch (err) {
+            expect(err.code).toBe(error.INCORRECT_PARAMETERS);
+        }
+    }
 
     beforeEach(() => {
         instance = new Reference(refName, authToken);
         spyOn(instance, "buildUrl").andCallThrough();
+    });
+    describe("constructor", () => {
+        it("throws if a refName is falsy", () => {
+            runErrorConstructor("", "abc123");
+        });
+        it("throws if a authToken is falsy", () => {
+            runErrorConstructor("john", "");
+        });
     });
     describe(".initArtifact()", () => {
         beforeEach(() => {
