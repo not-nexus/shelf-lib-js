@@ -1,6 +1,8 @@
 shelf-lib-js
 ============
 
+[![Build Status](https://travis-ci.org/not-nexus/shelf-lib-js.svg?branch=master)](https://travis-ci.org/not-nexus/shelf-lib-js)
+[![codecov.io](https://codecov.io/github/not-nexus/shelf-lib-js/coverage.svg?branch=master)](https://codecov.io/github/not-nexus/shelf-lib-js?branch=master)
 
 Introduction
 ------------
