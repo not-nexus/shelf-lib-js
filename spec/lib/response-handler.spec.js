@@ -1,15 +1,15 @@
 "use strict";
 
 describe("lib/response-handler", () => {
-    var bluebird, error, logger, parseLinkHeader, responseHandler, ShelfError, URI;
+    var bluebird, error, HttpLinkHeader, logger, responseHandler, ShelfError, URI;
 
     bluebird = require("bluebird");
     error = require("../../lib/error")();
     logger = require("../../lib/logger")();
-    parseLinkHeader = require("parse-link-header");
+    HttpLinkHeader = require("http-link-header");
     ShelfError = require("../../lib/shelf-error")();
     URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, logger, parseLinkHeader, ShelfError, URI);
+    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
     describe(".isErrorCode()", () => {
         it("returns false if the status code is within the right range", () => {
             expect(responseHandler.isErrorCode(300)).toBe(false);

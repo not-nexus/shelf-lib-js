@@ -1,0 +1,6 @@
+1.0.0 (2016-12-8)
+    - Initial release of Shelf Library
+2.0.0 (2017-02-24)
+    - Throw an exception if you don't provide a refName or a token.
+2.0.1 (2017-02-28)
+    - Change module used for link parsing. Now using http-link-header.
