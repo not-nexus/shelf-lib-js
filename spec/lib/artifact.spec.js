@@ -1,7 +1,7 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authTokenMock, bluebird, content, downloadLocation, error, fs, instance, logger, MetadataMock, parseLinkHeader, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, authTokenMock, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
     authTokenMock = "abcd1234";
     bluebird = require("bluebird");
@@ -10,7 +10,7 @@ describe("lib/artifact", () => {
     fs = require("fs");
     logger = require("../../lib/logger")();
     MetadataMock = require("../mock/metadata-mock")();
-    parseLinkHeader = require("parse-link-header");
+    HttpLinkHeader = require("http-link-header");
     requestMock = require("../mock/request-mock")();
     requestOptions = require("../../lib/request-options")({
         strictHostCheck: true
@@ -20,7 +20,7 @@ describe("lib/artifact", () => {
     ShelfError = require("../../lib/shelf-error")();
     uri = "http://api.gisnep.example.com";
     URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, logger, parseLinkHeader, ShelfError, URI);
+    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
     Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
     beforeEach(() => {
         content = "someContent";

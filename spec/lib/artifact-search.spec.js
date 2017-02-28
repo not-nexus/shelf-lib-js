@@ -1,21 +1,21 @@
 "use strict";
 
 describe("lib/artifact-search", () => {
-    var ArtifactSearch, authToken, bluebird, error, host, instance, logger, parseLinkHeader, path, refName, requestOptions, requestPromiseMock, responseHandler, searchParameters, ShelfError, URI;
+    var ArtifactSearch, authToken, bluebird, error, host, HttpLinkHeader, instance, logger, path, refName, requestOptions, requestPromiseMock, responseHandler, searchParameters, ShelfError, URI;
 
     authToken = "abcd1234";
     bluebird = require("bluebird");
     error = require("../../lib/error")();
     host = "exampleHost";
     logger = require("../../lib/logger")();
-    parseLinkHeader = require("parse-link-header");
+    HttpLinkHeader = require("http-link-header");
     path = "example/path";
     refName = "exampleRefName";
     requestOptions = require("../../lib/request-options")({}, logger);
     requestPromiseMock = require("../mock/request-promise-mock")();
     ShelfError = require("../../lib/shelf-error")();
     URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, logger, parseLinkHeader, ShelfError, URI);
+    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
     ArtifactSearch = require("../../lib/artifact-search.js")(bluebird, error, logger, requestOptions, requestPromiseMock, responseHandler, ShelfError, URI);
     beforeEach(() => {
         instance = new ArtifactSearch(host, refName, path, authToken);
