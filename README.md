@@ -34,7 +34,7 @@ The second parameter when requiring the library is an object holding various opt
 
 * `logLevel` - Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". WARNING: If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril.
 * `strictHostCheck` - Turns off request strictHostCheck. This defaults to `true`.
-* `timeoutDuration` - Sets the amount of time in milliseconds before requests timeout. This defaults to 60000.
+* `timeoutDuration` - Sets the amount of time in milliseconds before requests timeout. This defaults to 300000 (five minutes).
 
 Example:
 
