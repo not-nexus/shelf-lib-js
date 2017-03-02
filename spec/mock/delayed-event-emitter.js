@@ -94,7 +94,7 @@ class DelayedEventEmitter extends events.EventEmitter {
 
 
     /**
-     * Because this is how we always use it except we
+     * This is how we always use it except we
      * do this in every test.
      *
      * If in the future you would like to test what is
