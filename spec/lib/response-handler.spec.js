@@ -40,6 +40,23 @@ describe("lib/response-handler", () => {
             expect(errorFromResponse.message).toBe(error.UNKNOWN);
             expect(errorFromResponse.code).toBe(error.UNKNOWN);
         });
+        it("returns the message with an unknown error if it exists", () => {
+            var body;
+
+            body = {
+                code: "anUnknownError",
+                message: "Oh no!"
+            };
+            errorResponse = {
+                error: 500,
+                response: {
+                    body
+                }
+            };
+            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
+            expect(errorFromResponse.message).toBe(body.message);
+            expect(errorFromResponse.code).toBe(error.UNKNOWN);
+        });
         it("returns a timeout error", () => {
             errorResponse = {
                 code: "exampleTimeoutError"
@@ -47,6 +64,23 @@ describe("lib/response-handler", () => {
             errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
             expect(errorFromResponse.message).toBe("Socket Timeout");
             expect(errorFromResponse.code).toBe(error.TIMEOUT);
+        });
+        it("recognizes invalid_request_data_format", () => {
+            var body;
+
+            body = {
+                code: error.INVALID_REQUEST_DATA_FORMAT,
+                message: "Invalid blah blah blah"
+            };
+            errorResponse = {
+                error: 500,
+                response: {
+                    body
+                }
+            };
+            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
+            expect(errorFromResponse.message).toBe(body.message);
+            expect(errorFromResponse.code).toBe(body.code);
         });
         it("returns known errors", () => {
             errorResponse = {
