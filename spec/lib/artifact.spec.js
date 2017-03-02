@@ -198,6 +198,21 @@ describe("lib/artifact", () => {
             });
         });
         it("rejects if the response is an error", () => {
+            requestMock.get = () => {
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
+                responseMock.delayEmit({
+                    error: 1
+                }, "error", {
+                    statusCode: 400
+                });
+                responseMock.delayEmit({
+                    finish: 1
+                }, "finish");
+
+                return requestMock;
+            };
             responseHandler.isErrorCode.andReturn(true);
             promise = instance.downloadToFile(downloadLocation);
 
