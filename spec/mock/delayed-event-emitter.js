@@ -73,7 +73,7 @@ class DelayedEventEmitter extends events.EventEmitter {
      * This means that the test would just stop working without running
      * the rest of them or failing the test that was running.
      *
-     * requiredListeners is a key value object where the key is the name
+     * requiredListeners is a key-value object where the key is the name
      * of an event and the value is the number of listeners you require
      * before the event is emitted. For example, say I needed a "data"
      * listener attached before emitting my "data" event.
@@ -91,6 +91,7 @@ class DelayedEventEmitter extends events.EventEmitter {
             args: Array.prototype.slice.call(arguments, 1)
         });
     }
+
 
     /**
      * Because this is how we always use it except we
