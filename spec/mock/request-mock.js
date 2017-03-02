@@ -1,62 +1,20 @@
 "use strict";
 
-var events;
+var DelayedEventEmitter;
 
-events = require("events");
+DelayedEventEmitter = require("./delayed-event-emitter");
 
 module.exports = () => {
-    var eventEmitter, request;
+    var requestMock;
 
-    request = jasmine.createSpyObj("request", [
-        "contentType",
-        "get",
-        "getContentLength",
-        "getPath",
-        "getQuery",
-        "href",
-        "isChunked",
-        "post"
-    ]);
-    request.body = null;
-    request.contentType.andReturn(null);
-    request.getContentLength.andCallFake(() => {
-        return request.internalContentLength;
-    });
-    request.getPath.andCallFake(() => {
-        return request.internalPath;
-    });
-    request.getQuery.andCallFake(() => {
-        return request.internalQuery;
-    });
-    request.headers = [];
-    request.href.andCallFake(() => {
-        return request.internalPath;
-    });
-    request.isChunked.andCallFake(() => {
-        return false;
-    });
-    request.method = "GET";
-    request.params = {};
+    requestMock = new DelayedEventEmitter();
 
-    // These things are only used by the mock
-    request.internalContentLength = 0;
-    request.internalPath = "/path";
-    request.internalQuery = "";
-
-    // Custom additions to the standard Restify request object
-    request.cookies = {};
-
-    // Inherit methods from EventEmitter to get "on", "emit", "once", etc.
-    eventEmitter = new events.EventEmitter();
     [
-        "emit",
-        "on",
-        "once"
-    ].forEach((methodName) => {
-        request[methodName] = eventEmitter[methodName].bind(eventEmitter);
-        spyOn(request, methodName).andCallThrough();
+        "post",
+        "get"
+    ].forEach((method) => {
+        requestMock[method] = jasmine.createSpy(method);
     });
-    request.resume = jasmine.createSpy("request.resume");
 
-    return request;
+    return requestMock;
 };

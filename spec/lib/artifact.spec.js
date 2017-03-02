@@ -1,7 +1,7 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authTokenMock, bluebird, content, DelayedEventEmitter, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, authTokenMock, bluebird, content, DelayedEventEmitter, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestMockFactory, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
     authTokenMock = "abcd1234";
     bluebird = require("bluebird");
@@ -11,7 +11,7 @@ describe("lib/artifact", () => {
     logger = require("../../lib/logger")();
     MetadataMock = require("../mock/metadata-mock")();
     HttpLinkHeader = require("http-link-header");
-    requestMock = require("../mock/request-mock")();
+    requestMockFactory = require("../mock/request-mock");
     requestOptions = require("../../lib/request-options")({
         strictHostCheck: true
     }, logger);
@@ -21,11 +21,12 @@ describe("lib/artifact", () => {
     uri = "http://api.gisnep.example.com";
     URI = require("urijs");
     responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
-    Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
     beforeEach(() => {
         content = "someContent";
-        instance = new Artifact(uri, authTokenMock);
+        requestMock = requestMockFactory();
         responseMock = new DelayedEventEmitter();
+        Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
+        instance = new Artifact(uri, authTokenMock);
         spyOn(requestOptions, "createOptions").andCallThrough();
         spyOn(responseHandler, "handleErrorResponse").andCallThrough();
         spyOn(responseHandler, "resolveLink").andCallThrough();
@@ -170,10 +171,9 @@ describe("lib/artifact", () => {
         beforeEach(() => {
             spyOn(fs, "createWriteStream");
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("response", responseMock);
-                });
-
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
                 responseMock.delayEmit({
                     finish: 1
                 }, "finish");
@@ -207,9 +207,9 @@ describe("lib/artifact", () => {
         });
         it("rejects on request error", () => {
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("error", responseMock);
-                });
+                requestMock.delayEmit({
+                    error: 1
+                }, "error", responseMock);
 
                 return requestMock;
             };
@@ -221,9 +221,9 @@ describe("lib/artifact", () => {
         });
         it("rejects on response.pipe error", () => {
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("response", responseMock);
-                });
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
                 responseMock.delayEmit({
                     error: 1
                 }, "error", {

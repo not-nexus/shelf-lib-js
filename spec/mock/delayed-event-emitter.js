@@ -12,7 +12,7 @@ class DelayedEventEmitter extends events.EventEmitter {
      */
     constructor() {
         super();
-        this.delayedEmits = [];
+        this.delayedEmitList = [];
     }
 
 
@@ -27,7 +27,7 @@ class DelayedEventEmitter extends events.EventEmitter {
     on(eventName, listener) {
         super.on(eventName, listener);
 
-        this.delayedEmits.forEach((delayedEmit) => {
+        this.delayedEmitList.forEach((delayedEmit) => {
             var matchesRequired;
 
             matchesRequired = true;
@@ -42,7 +42,6 @@ class DelayedEventEmitter extends events.EventEmitter {
             });
 
             if (matchesRequired) {
-                console.log("EMITTING", delayedEmit.args);
                 this.emit.apply(this, delayedEmit.args);
             }
         });
@@ -87,7 +86,7 @@ class DelayedEventEmitter extends events.EventEmitter {
      * @param {string} eventName
      */
     delayEmit(requiredListeners) {
-        this.delayedEmits.push({
+        this.delayedEmitList.push({
             requiredListeners,
             args: Array.prototype.slice.call(arguments, 1)
         });
