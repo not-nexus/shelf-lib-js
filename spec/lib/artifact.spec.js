@@ -1,7 +1,7 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authTokenMock, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, authTokenMock, bluebird, content, DelayedEventEmitter, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
     authTokenMock = "abcd1234";
     bluebird = require("bluebird");
@@ -16,7 +16,7 @@ describe("lib/artifact", () => {
         strictHostCheck: true
     }, logger);
     requestPromiseMock = require("../mock/request-promise-mock")();
-    responseMock = require("../mock/response-mock")();
+    DelayedEventEmitter = require("../mock/delayed-event-emitter");
     ShelfError = require("../../lib/shelf-error")();
     uri = "http://api.gisnep.example.com";
     URI = require("urijs");
@@ -25,6 +25,7 @@ describe("lib/artifact", () => {
     beforeEach(() => {
         content = "someContent";
         instance = new Artifact(uri, authTokenMock);
+        responseMock = new DelayedEventEmitter();
         spyOn(requestOptions, "createOptions").andCallThrough();
         spyOn(responseHandler, "handleErrorResponse").andCallThrough();
         spyOn(responseHandler, "resolveLink").andCallThrough();
@@ -171,13 +172,15 @@ describe("lib/artifact", () => {
             requestMock.get = () => {
                 setTimeout(() => {
                     requestMock.emit("response", responseMock);
-                    responseMock.emit("finish");
                 });
+
+                responseMock.delayEmit({
+                    finish: 1
+                }, "finish");
 
                 return requestMock;
             };
             spyOn(responseHandler, "isErrorCode").andReturn(false);
-            responseMock.pipe.andReturn(responseMock);
         });
         it("creates a write stream if the file is a string", () => {
             promise = instance.downloadToFile(downloadLocation);
@@ -206,7 +209,6 @@ describe("lib/artifact", () => {
             requestMock.get = () => {
                 setTimeout(() => {
                     requestMock.emit("error", responseMock);
-                    responseMock.emit("finish");
                 });
 
                 return requestMock;
@@ -221,9 +223,11 @@ describe("lib/artifact", () => {
             requestMock.get = () => {
                 setTimeout(() => {
                     requestMock.emit("response", responseMock);
-                    responseMock.emit("error", {
-                        code: "socket_timeout"
-                    });
+                });
+                responseMock.delayEmit({
+                    error: 1
+                }, "error", {
+                    code: "socket_timeout"
                 });
 
                 return requestMock;
