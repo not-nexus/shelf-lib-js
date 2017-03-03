@@ -18,8 +18,8 @@ describe("lib/metadata", () => {
     Metadata = require("../../lib/metadata")(bluebird, error, logger, requestOptions, requestPromiseMock, responseHandlerMock, ShelfError);
     beforeEach(() => {
         instance = new Metadata(uri, authToken);
-        spyOn(bluebird, "reject").andCallThrough();
-        spyOn(requestOptions, "createOptions").andCallThrough();
+        spyOn(bluebird, "reject").and.callThrough();
+        spyOn(requestOptions, "createOptions").and.callThrough();
     });
     [
         {
@@ -117,7 +117,7 @@ describe("lib/metadata", () => {
                 expect(requestPromiseMock[test.verb]).toHaveBeenCalledWith(test.expectedCall);
             });
             it("calls responseHandler.handleMetadataResponse()", () => {
-                requestPromiseMock[test.verb].andReturn(bluebird.reject());
+                requestPromiseMock[test.verb].and.returnValue(bluebird.reject());
 
                 return instance[test.fn].apply(this, test.input).then(() => {
                     expect(responseHandlerMock.handleErrorResponse).toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe("lib/metadata", () => {
             .getProperty (2nd 'get' called) and .updateProperty (2nd 'put'
             called) tests will break if this cleanup isn't done.
             */
-            requestPromiseMock[test.verb] = jasmine.createSpy(`${test.verb}`).andReturn(bluebird.resolve({}));
+            requestPromiseMock[test.verb] = jasmine.createSpy(`${test.verb}`).and.returnValue(bluebird.resolve({}));
         });
     });
     describe("input validation", () => {

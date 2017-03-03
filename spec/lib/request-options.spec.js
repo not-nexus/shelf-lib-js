@@ -17,6 +17,14 @@ describe("lib/requestOptions", () => {
             options = requestOptionsFactory().createOptions(authToken);
             expect(options.rejectUnauthorized).toBe(false);
         });
+        it("timeDuration for request options", () => {
+            libOptions = {
+                strictHostCheck: false,
+                timeoutDuration: 10
+            };
+            options = requestOptionsFactory().createOptions(authToken);
+            expect(options.rejectUnauthorized).toBe(false);
+        });
         it("returns an options object", () => {
             libOptions = {
                 strictHostCheck: true

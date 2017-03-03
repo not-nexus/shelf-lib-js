@@ -6,7 +6,7 @@ module.exports = () => {
     mock = jasmine.createSpyObj("requestOptionsMock", [
         "createOptions"
     ]);
-    mock.createOptions.andReturn({});
+    mock.createOptions.and.returnValue({});
 
     return mock;
 };

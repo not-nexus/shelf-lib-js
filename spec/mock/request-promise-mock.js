@@ -13,7 +13,7 @@ module.exports = () => {
     mock = jasmine.createSpyObj("requestPromiseMock", methods);
 
     methods.forEach((method) => {
-        mock[method].andReturn(bluebird.resolve({
+        mock[method].and.returnValue(bluebird.resolve({
             headers: {
                 link: "</morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z>; rel=\"item\"; title=\"artifact\", </morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:01:29.716Z>; rel=\"item\"; title=\"artifact\""
             },

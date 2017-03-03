@@ -4,8 +4,8 @@
     "description": "A library that allows the user to interact with Shelf.",
     "main": "./lib/index.js",
     "scripts": {
-        "test": "istanbul cover jasmine-node node_modules/jasmine-test-helpers/lib/ --captureExceptions spec/ && codecov && eslint .",
-        "watch": "jasmine-node node_modules/jasmine-test-helpers/lib/ lib spec --autotest --watch"
+        "test": "script/test",
+        "watch": "script/watch"
     },
     "repository": {
         "type": "git",
@@ -33,7 +33,7 @@
         "codecov": "^1.0.1",
         "eslint": "^2.10.2",
         "istanbul": "^0.4.2",
-        "jasmine-node": "^1.14.5",
+        "jasmine": "~2.5.2",
         "jasmine-test-helpers": "^1.1.0",
         "mock-require": "^1.3.0"
     },

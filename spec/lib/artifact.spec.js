@@ -3,36 +3,37 @@
 describe("lib/artifact", () => {
     var Artifact, authTokenMock, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
-    authTokenMock = "abcd1234";
-    bluebird = require("bluebird");
-    downloadLocation = "example/download/path";
-    error = require("../../lib/error");
-    fs = require("fs");
-    logger = require("../../lib/logger")();
-    MetadataMock = require("../mock/metadata-mock")();
-    HttpLinkHeader = require("http-link-header");
-    requestMock = require("../mock/request-mock")();
-    requestOptions = require("../../lib/request-options")({
-        strictHostCheck: true
-    }, logger);
-    requestPromiseMock = require("../mock/request-promise-mock")();
-    responseMock = require("../mock/response-mock")();
-    ShelfError = require("../../lib/shelf-error")();
-    uri = "http://api.gisnep.example.com";
-    URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
-    Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
     beforeEach(() => {
+        authTokenMock = "abcd1234";
+        bluebird = require("bluebird");
+        downloadLocation = "example/download/path";
+        error = require("../../lib/error");
+        fs = require("fs");
+        logger = require("../../lib/logger")();
+        MetadataMock = require("../mock/metadata-mock")();
+        HttpLinkHeader = require("http-link-header");
+        requestMock = require("../mock/request-mock")();
+        requestOptions = require("../../lib/request-options")({
+            strictHostCheck: true
+        }, logger);
+        requestPromiseMock = require("../mock/request-promise-mock")();
+        responseMock = require("../mock/response-mock")();
+        ShelfError = require("../../lib/shelf-error")();
+        uri = "http://api.gisnep.example.com";
+        URI = require("urijs");
+        responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
+        Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
         content = "someContent";
         instance = new Artifact(uri, authTokenMock);
-        spyOn(requestOptions, "createOptions").andCallThrough();
-        spyOn(responseHandler, "handleErrorResponse").andCallThrough();
-        spyOn(responseHandler, "resolveLink").andCallThrough();
-        spyOn(responseHandler, "createErrorForResponse").andCallThrough();
+        spyOn(requestOptions, "createOptions").and.callThrough();
+        spyOn(responseHandler, "handleErrorResponse").and.callThrough();
+        spyOn(responseHandler, "resolveLink").and.callThrough();
+        spyOn(responseHandler, "createErrorForResponse").and.callThrough();
+        spyOn(bluebird, "fromCallback").and.callThrough();
     });
     describe(".upload()", () => {
         it("calls bluebird.fromCallback()", () => {
-            spyOn(bluebird, "fromCallback").andReturn(bluebird.resolve({
+            bluebird.fromCallback.and.returnValue(bluebird.resolve({
                 headers: {
                     location: "someLocation"
                 }
@@ -43,7 +44,7 @@ describe("lib/artifact", () => {
             });
         });
         it("posts", () => {
-            requestMock.post.andCallFake((options, resolver) => {
+            requestMock.post.and.callFake((options, resolver) => {
                 return {
                     form: () => {
                         return {
@@ -65,7 +66,7 @@ describe("lib/artifact", () => {
             });
         });
         it("calls responseHandler.handleErrorResponse on error", () => {
-            spyOn(bluebird, "fromCallback").andReturn(bluebird.resolve({
+            bluebird.fromCallback.and.returnValue(bluebird.resolve({
                 statusCode: 404,
                 headers: {
                     location: "someLocation"
@@ -82,7 +83,7 @@ describe("lib/artifact", () => {
             });
         });
         it("calls responseHandler.resolveLink", () => {
-            spyOn(bluebird, "fromCallback").andReturn(bluebird.resolve({
+            bluebird.fromCallback.and.returnValue(bluebird.resolve({
                 headers: {
                     location: "someLocation"
                 }
@@ -98,7 +99,7 @@ describe("lib/artifact", () => {
             spyOn(fs, "createReadStream");
         });
         it("creates a read stream if the file is a string", () => {
-            requestMock.post.andCallFake((options, resolver) => {
+            requestMock.post.and.callFake((options, resolver) => {
                 resolver(null, {
                     statusCode: 404,
                     headers: {
@@ -115,7 +116,7 @@ describe("lib/artifact", () => {
             });
         });
         it("doesn't create a read stream if the file isn't a string", () => {
-            requestMock.post.andCallFake((options, resolver) => {
+            requestMock.post.and.callFake((options, resolver) => {
                 resolver(null, {
                     statusCode: "exampleStatus",
                     headers: {
@@ -147,7 +148,7 @@ describe("lib/artifact", () => {
             });
         });
         it("returns a response body", () => {
-            requestPromiseMock.get.andReturn(bluebird.resolve({
+            requestPromiseMock.get.and.returnValue(bluebird.resolve({
                 body: "responseBody"
             }));
 
@@ -156,7 +157,7 @@ describe("lib/artifact", () => {
             });
         });
         it("calls responseHandler.handleErrorResponse on error", () => {
-            requestPromiseMock.get.andReturn(bluebird.reject({}));
+            requestPromiseMock.get.and.returnValue(bluebird.reject({}));
 
             return instance.download().then(jasmine.fail, () => {
                 expect(responseHandler.handleErrorResponse).toHaveBeenCalled();
@@ -176,8 +177,8 @@ describe("lib/artifact", () => {
 
                 return requestMock;
             };
-            spyOn(responseHandler, "isErrorCode").andReturn(false);
-            responseMock.pipe.andReturn(responseMock);
+            spyOn(responseHandler, "isErrorCode").and.returnValue(false);
+            responseMock.pipe.and.returnValue(responseMock);
         });
         it("creates a write stream if the file is a string", () => {
             promise = instance.downloadToFile(downloadLocation);
@@ -195,7 +196,7 @@ describe("lib/artifact", () => {
             });
         });
         it("rejects if the response is an error", () => {
-            responseHandler.isErrorCode.andReturn(true);
+            responseHandler.isErrorCode.and.returnValue(true);
             promise = instance.downloadToFile(downloadLocation);
 
             return promise.then(jasmine.fail, () => {
