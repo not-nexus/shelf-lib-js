@@ -1,7 +1,7 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authToken, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, authToken, bluebird, content, DelayedEventEmitter, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestMockFactory, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
     beforeEach(() => {
         authToken = "abcd1234";
@@ -12,19 +12,23 @@ describe("lib/artifact", () => {
         logger = require("../../lib/logger")();
         MetadataMock = require("../mock/metadata-mock")();
         HttpLinkHeader = require("http-link-header");
-        requestMock = require("../mock/request-mock")();
+        requestMockFactory = require("../mock/request-mock");
         requestOptions = require("../../lib/request-options")({
             strictHostCheck: true,
             timeoutDuration: 30
         }, logger);
         requestPromiseMock = require("../mock/request-promise-mock")();
-        responseMock = require("../mock/response-mock")();
+        DelayedEventEmitter = require("../mock/delayed-event-emitter");
+        responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
         ShelfError = require("../../lib/shelf-error")();
         uri = "http://api.gisnep.example.com";
         URI = require("urijs");
         responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
         Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
         content = "someContent";
+        requestMock = requestMockFactory();
+        responseMock = new DelayedEventEmitter();
+        Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
         instance = new Artifact(uri, authToken);
         spyOn(requestOptions, "createOptions").and.callThrough();
         spyOn(responseHandler, "handleErrorResponse").and.callThrough();
@@ -172,15 +176,16 @@ describe("lib/artifact", () => {
         beforeEach(() => {
             spyOn(fs, "createWriteStream");
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("response", responseMock);
-                    responseMock.emit("finish");
-                });
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
+                responseMock.delayEmit({
+                    finish: 1
+                }, "finish");
 
                 return requestMock;
             };
             spyOn(responseHandler, "isErrorCode").and.returnValue(false);
-            responseMock.pipe.and.returnValue(responseMock);
         });
         it("creates a write stream if the file is a string", () => {
             promise = instance.downloadToFile(downloadLocation);
@@ -198,6 +203,21 @@ describe("lib/artifact", () => {
             });
         });
         it("rejects if the response is an error", () => {
+            requestMock.get = () => {
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
+                responseMock.delayEmit({
+                    error: 1
+                }, "error", {
+                    statusCode: 400
+                });
+                responseMock.delayEmit({
+                    finish: 1
+                }, "finish");
+
+                return requestMock;
+            };
             responseHandler.isErrorCode.and.returnValue(true);
             promise = instance.downloadToFile(downloadLocation);
 
@@ -207,10 +227,9 @@ describe("lib/artifact", () => {
         });
         it("rejects on request error", () => {
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("error", responseMock);
-                    responseMock.emit("finish");
-                });
+                requestMock.delayEmit({
+                    error: 1
+                }, "error", responseMock);
 
                 return requestMock;
             };
@@ -222,11 +241,13 @@ describe("lib/artifact", () => {
         });
         it("rejects on response.pipe error", () => {
             requestMock.get = () => {
-                setTimeout(() => {
-                    requestMock.emit("response", responseMock);
-                    responseMock.emit("error", {
-                        code: "socket_timeout"
-                    });
+                requestMock.delayEmit({
+                    response: 1
+                }, "response", responseMock);
+                responseMock.delayEmit({
+                    error: 1
+                }, "error", {
+                    code: "socket_timeout"
                 });
 
                 return requestMock;
