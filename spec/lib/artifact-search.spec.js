@@ -20,9 +20,9 @@ describe("lib/artifact-search", () => {
     beforeEach(() => {
         instance = new ArtifactSearch(host, refName, path, authToken);
         spyOn(responseHandler, "handleErrorResponse");
-        spyOn(bluebird, "map").andCallThrough();
-        spyOn(bluebird, "reject").andCallThrough();
-        spyOn(bluebird, "resolve").andCallThrough();
+        spyOn(bluebird, "map").and.callThrough();
+        spyOn(bluebird, "reject").and.callThrough();
+        spyOn(bluebird, "resolve").and.callThrough();
     });
     describe(".search()", () => {
         it("returns an array of URLs", () => {
@@ -41,7 +41,7 @@ describe("lib/artifact-search", () => {
             });
         });
         it("catches errors from requestPromise", () => {
-            requestPromiseMock.post.andReturn(bluebird.reject({
+            requestPromiseMock.post.and.returnValue(bluebird.reject({
                 code: "exampleTimeoutError"
             }));
 
