@@ -9,7 +9,8 @@ describe("lib/metadata", () => {
     error = require("../../lib/error")();
     logger = require("../../lib/logger")();
     requestOptions = require("../../lib/request-options")({
-        strictHostCheck: true
+        strictHostCheck: true,
+        timeoutDuration: 30
     }, logger);
     requestPromiseMock = require("../mock/request-promise-mock")();
     responseHandlerMock = require("../mock/response-handler-mock")();
@@ -31,7 +32,8 @@ describe("lib/metadata", () => {
                 },
                 resolveWithFullResponse: true,
                 json: true,
-                url: "http://api.gisnep.example.com/_meta"
+                url: "http://api.gisnep.example.com/_meta",
+                timeout: 30
             }
         }, {
             fn: "getProperty",
@@ -45,7 +47,8 @@ describe("lib/metadata", () => {
                 },
                 resolveWithFullResponse: true,
                 json: true,
-                url: "http://api.gisnep.example.com/_meta/paramName"
+                url: "http://api.gisnep.example.com/_meta/paramName",
+                timeout: 30
             }
         }, {
             fn: "updateAll",
@@ -60,7 +63,8 @@ describe("lib/metadata", () => {
                 resolveWithFullResponse: true,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta",
-                body: "paramMetadata"
+                body: "paramMetadata",
+                timeout: 30
             }
         }, {
             fn: "updateProperty",
@@ -76,7 +80,8 @@ describe("lib/metadata", () => {
                 resolveWithFullResponse: true,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName",
-                body: "paramProperty"
+                body: "paramProperty",
+                timeout: 30
             }
         }, {
             fn: "createProperty",
@@ -92,7 +97,8 @@ describe("lib/metadata", () => {
                 resolveWithFullResponse: true,
                 json: true,
                 url: "http://api.gisnep.example.com/_meta/paramName",
-                body: "paramMetadata"
+                body: "paramMetadata",
+                timeout: 30
             }
         }, {
             fn: "deleteProperty",
@@ -106,7 +112,8 @@ describe("lib/metadata", () => {
                 },
                 resolveWithFullResponse: true,
                 json: true,
-                url: "http://api.gisnep.example.com/_meta/paramName"
+                url: "http://api.gisnep.example.com/_meta/paramName",
+                timeout: 30
             }
         }
     ].forEach((test) => {

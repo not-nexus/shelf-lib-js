@@ -1,10 +1,10 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authTokenMock, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, authToken, bluebird, content, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
 
     beforeEach(() => {
-        authTokenMock = "abcd1234";
+        authToken = "abcd1234";
         bluebird = require("bluebird");
         downloadLocation = "example/download/path";
         error = require("../../lib/error");
@@ -14,7 +14,8 @@ describe("lib/artifact", () => {
         HttpLinkHeader = require("http-link-header");
         requestMock = require("../mock/request-mock")();
         requestOptions = require("../../lib/request-options")({
-            strictHostCheck: true
+            strictHostCheck: true,
+            timeoutDuration: 30
         }, logger);
         requestPromiseMock = require("../mock/request-promise-mock")();
         responseMock = require("../mock/response-mock")();
@@ -24,7 +25,7 @@ describe("lib/artifact", () => {
         responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
         Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
         content = "someContent";
-        instance = new Artifact(uri, authTokenMock);
+        instance = new Artifact(uri, authToken);
         spyOn(requestOptions, "createOptions").and.callThrough();
         spyOn(responseHandler, "handleErrorResponse").and.callThrough();
         spyOn(responseHandler, "resolveLink").and.callThrough();
@@ -143,7 +144,8 @@ describe("lib/artifact", () => {
                     },
                     resolveWithFullResponse: true,
                     json: true,
-                    url: "http://api.gisnep.example.com"
+                    url: "http://api.gisnep.example.com",
+                    timeout: 30
                 });
             });
         });

@@ -27,14 +27,16 @@ describe("lib/requestOptions", () => {
         });
         it("returns an options object", () => {
             libOptions = {
-                strictHostCheck: true
+                strictHostCheck: true,
+                timeoutDuration: 30
             };
             options = requestOptionsFactory().createOptions(authToken);
             expect(options).toEqual({
                 headers: {
                     Authorization: "abcd1234"
                 },
-                resolveWithFullResponse: true
+                resolveWithFullResponse: true,
+                timeout: 30
             });
         });
     });
