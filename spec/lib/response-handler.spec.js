@@ -65,7 +65,7 @@ describe("lib/response-handler", () => {
     });
     describe(".handleErrorResponse()", () => {
         it("throws errors from responseHandler.createErrorForResponse()", () => {
-            spyOn(responseHandler, "createErrorForResponse").andReturn(new Error("SomeError"));
+            spyOn(responseHandler, "createErrorForResponse").and.returnValue(new Error("SomeError"));
             expect(() => {
                 responseHandler.handleErrorResponse();
             }).toThrow();

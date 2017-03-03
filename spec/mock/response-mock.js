@@ -19,7 +19,7 @@ module.exports = () => {
         "once"
     ].forEach((methodName) => {
         response[methodName] = eventEmitter[methodName].bind(eventEmitter);
-        spyOn(response, methodName).andCallThrough();
+        spyOn(response, methodName).and.callThrough();
     });
 
     return response;

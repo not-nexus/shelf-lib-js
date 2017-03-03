@@ -35,7 +35,7 @@ describe("lib/reference", () => {
 
     beforeEach(() => {
         instance = new Reference(refName, authToken);
-        spyOn(instance, "buildUrl").andCallThrough();
+        spyOn(instance, "buildUrl").and.callThrough();
     });
     describe("constructor", () => {
         it("throws if a refName is falsy", () => {
@@ -58,7 +58,7 @@ describe("lib/reference", () => {
     });
     describe(".initArtifactWithTimestamp()", () => {
         beforeEach(() => {
-            spyOn(dateService, "now").andReturn("2016-12-06T15:58:59.670Z");
+            spyOn(dateService, "now").and.returnValue("2016-12-06T15:58:59.670Z");
             artifact = instance.initArtifactWithTimestamp(path);
         });
         it("calls .buildUrl()", () => {
