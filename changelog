@@ -10,3 +10,5 @@
 	- Fixed tests to not use setTimeout so that an exception would not kill all tests.
 	- Changed UNKNOWN errors so the message is returned if one is provided.
 	- "invalid_request_data_format" is now a recognized error.
+2.1.1 (2017-03-09)
+    - Making path for initSearch optional for root searches.
