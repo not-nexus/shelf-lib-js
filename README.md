@@ -219,6 +219,8 @@ Finally, you can perform the search with your constructed parameters:
         console.log("Hit an error: " + err);
     });
 
+It will return a list of relative links for artifacts that matched the provided search.
+
 
 Errors
 ------
