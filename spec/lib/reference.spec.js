@@ -78,6 +78,13 @@ describe("lib/reference", () => {
             artifactSearch = instance.initSearch(path);
             expect(artifactSearch).toEqual(jasmine.any(ArtifactSearch));
         });
+        it("instantiates a new ArtifactSearch without a path", () => {
+            var artifactSearch;
+
+            artifactSearch = instance.initSearch();
+            expect(artifactSearch).toEqual(jasmine.any(ArtifactSearch));
+            expect(artifactSearch.path).toBe("");
+        });
     });
     describe(".buildUrl()", () => {
         it("returns the URI as a string", () => {
