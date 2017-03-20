@@ -1,262 +1,184 @@
 "use strict";
 
 describe("lib/artifact", () => {
-    var Artifact, authToken, bluebird, content, DelayedEventEmitter, downloadLocation, error, fs, HttpLinkHeader, instance, logger, MetadataMock, requestMock, requestMockFactory, requestOptions, requestPromiseMock, responseHandler, responseMock, ShelfError, URI, uri;
+    var Artifact, artifact, artifactContent, error, filename, fs, host, lib, nock, ShelfRequest, streamBuffers, streamModule, token, uri;
+
+    nock = require("nock");
+    fs = require("more-promises").promisifyAll(require("fs"));
+    streamModule = require("stream");
+    streamBuffers = require("stream-buffers");
+    filename = "upload-download-test-file";
+    lib = jasmine.createTestLib();
+    uri = lib.uri;
+    token = lib.token;
+    artifactContent = "test123 content";
+    host = lib.hostPrefix;
 
     beforeEach(() => {
-        authToken = "abcd1234";
-        bluebird = require("bluebird");
-        downloadLocation = "example/download/path";
-        error = require("../../lib/error");
-        fs = require("fs");
-        logger = require("../../lib/logger")();
-        MetadataMock = require("../mock/metadata-mock")();
-        HttpLinkHeader = require("http-link-header");
-        requestMockFactory = require("../mock/request-mock");
-        requestOptions = require("../../lib/request-options")({
-            strictHostCheck: true,
-            timeoutDuration: 30
-        }, logger);
-        requestPromiseMock = require("../mock/request-promise-mock")();
-        DelayedEventEmitter = require("../mock/delayed-event-emitter");
-        responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
-        ShelfError = require("../../lib/shelf-error")();
-        uri = "http://api.gisnep.example.com";
-        URI = require("urijs");
-        responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
-        Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
-        content = "someContent";
-        requestMock = requestMockFactory();
-        responseMock = new DelayedEventEmitter();
-        Artifact = require("../../lib/artifact")(bluebird, fs, logger, requestMock, requestOptions, requestPromiseMock, responseHandler, MetadataMock);
-        instance = new Artifact(uri, authToken);
-        spyOn(requestOptions, "createOptions").and.callThrough();
-        spyOn(responseHandler, "handleErrorResponse").and.callThrough();
-        spyOn(responseHandler, "resolveLink").and.callThrough();
-        spyOn(responseHandler, "createErrorForResponse").and.callThrough();
-        spyOn(bluebird, "fromCallback").and.callThrough();
+        error = lib.error;
+        ShelfRequest = lib.container.resolve("ShelfRequest");
+        Artifact = lib.container.resolve("Artifact");
+        artifact = new Artifact(uri.toString(), new ShelfRequest(token));
     });
-    describe(".upload()", () => {
-        it("calls bluebird.fromCallback()", () => {
-            bluebird.fromCallback.and.returnValue(bluebird.resolve({
-                headers: {
-                    location: "someLocation"
-                }
-            }));
+    describe("upload method", () => {
+        var fileContent, interceptor;
 
-            return instance.upload(content).then(() => {
-                expect(bluebird.fromCallback).toHaveBeenCalled();
-            });
-        });
-        it("posts", () => {
-            requestMock.post.and.callFake((options, resolver) => {
-                return {
-                    form: () => {
-                        return {
-                            append: () => {
-                                return resolver(null, {
-                                    headers: {
-                                        location: "someLocation"
-                                    }
-                                });
-                            }
-                        };
-                    }
-                };
-            });
-
-            return instance.upload(content).then(() => {
-                expect(requestOptions.createOptions).toHaveBeenCalled();
-                expect(requestMock.post).toHaveBeenCalled();
-            });
-        });
-        it("calls responseHandler.handleErrorResponse on error", () => {
-            bluebird.fromCallback.and.returnValue(bluebird.resolve({
-                statusCode: 404,
-                headers: {
-                    location: "someLocation"
-                }
-            }));
-
-            return instance.upload(content).then(jasmine.fail, () => {
-                expect(responseHandler.handleErrorResponse).toHaveBeenCalledWith({
-                    statusCode: 404,
-                    headers: {
-                        location: "someLocation"
-                    }
-                });
-            });
-        });
-        it("calls responseHandler.resolveLink", () => {
-            bluebird.fromCallback.and.returnValue(bluebird.resolve({
-                headers: {
-                    location: "someLocation"
-                }
-            }));
-
-            return instance.upload(content).then(() => {
-                expect(responseHandler.resolveLink).toHaveBeenCalled();
-            });
-        });
-    });
-    describe(".uploadFromFile()", () => {
+        // Buffer.from not supported in v4
+        fileContent = new Buffer("This is some content");
         beforeEach(() => {
-            spyOn(fs, "createReadStream");
+            var replyHeaders;
+
+            // The shelf API returns the full URI as a location header.
+            replyHeaders = {
+                location: uri.toString()
+            };
+            interceptor = nock(host)
+                .post(uri.path())
+                .matchHeader("Authorization", token);
+
+            interceptor.reply(201, "", replyHeaders)
+                .post((path) => {
+                    return path !== uri.path();
+                })
+                .reply(401, {
+                    code: error.UNAUTHORIZED,
+                    message: "MEANS THE PATH DIDN'T MATCH. THIS IS FROM NOCK."
+                });
         });
-        it("creates a read stream if the file is a string", () => {
-            requestMock.post.and.callFake((options, resolver) => {
-                resolver(null, {
-                    statusCode: 404,
-                    headers: {
-                        location: "exampleLocation"
-                    }
+        describe(".upload()", () => {
+            /**
+             * @param {(Buffer|string)} thing
+             * @return {Promise.<undefined>}
+             */
+            function runUpload(thing) {
+                return artifact.upload(thing).then((loc) => {
+                    expect(loc).toBe("/test123");
+                    expect(interceptor.req.headers["content-type"]).toContain("multipart/form-data; boundary=");
+                });
+            }
+            it("will upload a string", () => {
+                return runUpload("LOL HI");
+            });
+            it("will upload a buffer", () => {
+                // Buffer.from not supported in v4
+                return runUpload(new Buffer("LOL HI"));
+            });
+        });
+        describe(".uploadFromFile()", () => {
+            it("will upload the contents of a file", () => {
+                return fs.writeFileAsync(filename, fileContent).then(() => {
+                    return artifact.uploadFromFile(filename);
+                }).then((loc) => {
+                    expect(loc).toBe("/test123");
+
+                    /* This is as close as I can get. I can't get access to the content that was streamed but
+                     * I can at least see it was intended to be uploaded.
+                     */
+                    expect(interceptor.req.headers["content-type"]).toContain("multipart/form-data; boundary=");
                 });
             });
+            it("will upload the contents of a stream", () => {
+                var stream, streamPromise;
 
-            return instance.uploadFromFile(content).then(jasmine.fail, () => {
-                expect(responseHandler.handleErrorResponse).toHaveBeenCalled();
-                expect(fs.createReadStream).toHaveBeenCalled();
-                expect(requestOptions.createOptions).toHaveBeenCalled();
-                expect(requestMock.post).toHaveBeenCalled();
-            });
-        });
-        it("doesn't create a read stream if the file isn't a string", () => {
-            requestMock.post.and.callFake((options, resolver) => {
-                resolver(null, {
-                    statusCode: "exampleStatus",
-                    headers: {
-                        location: "exampleLocation"
-                    }
+                stream = new streamModule.Readable();
+                stream.push("HELLO THERE");
+                stream.push(null);
+
+                /* The idea is this streamPromise will resolve
+                 * when it is done streaming it to nock.
+                 * Either that or the test will timeout.
+                 */
+                streamPromise = new Promise((resolve) => {
+                    stream.on("end", () => {
+                        resolve();
+                    });
                 });
-            });
-            content = {};
 
-            return instance.uploadFromFile(content).then(() => {
-                expect(fs.createReadStream).not.toHaveBeenCalled();
-                expect(requestOptions.createOptions).toHaveBeenCalled();
-                expect(requestMock.post).toHaveBeenCalled();
+                artifact.uploadFromFile(stream).then((loc) => {
+                    expect(loc).toBe("/test123");
+
+                    return streamPromise;
+                });
             });
         });
     });
-    describe(".download()", () => {
-        it("calls requestPromise.get()", () => {
-            return instance.download().then(() => {
-                expect(requestOptions.createOptions).toHaveBeenCalled();
-                expect(requestPromiseMock.get).toHaveBeenCalledWith({
-                    headers: {
-                        Authorization: "abcd1234"
-                    },
-                    resolveWithFullResponse: true,
-                    json: true,
-                    url: "http://api.gisnep.example.com",
-                    timeout: 30
-                });
-            });
-        });
-        it("returns a response body", () => {
-            requestPromiseMock.get.and.returnValue(bluebird.resolve({
-                body: "responseBody"
-            }));
-
-            return instance.download().then((returnVal) => {
-                expect(returnVal).toBe("responseBody");
-            });
-        });
-        it("calls responseHandler.handleErrorResponse on error", () => {
-            requestPromiseMock.get.and.returnValue(bluebird.reject({}));
-
-            return instance.download().then(jasmine.fail, () => {
-                expect(responseHandler.handleErrorResponse).toHaveBeenCalled();
-            });
-        });
-    });
-    describe(".downloadToFile()", () => {
-        var promise;
-
+    describe("download method", () => {
         beforeEach(() => {
-            spyOn(fs, "createWriteStream");
-            requestMock.get = () => {
-                requestMock.delayEmit({
-                    response: 1
-                }, "response", responseMock);
-                responseMock.delayEmit({
-                    finish: 1
-                }, "finish");
+            var replyHeaders;
 
-                return requestMock;
+            replyHeaders = {
+                "Content-Type": "application/octet-stream",
+                "Content-Length": "15"
             };
-            spyOn(responseHandler, "isErrorCode").and.returnValue(false);
-        });
-        it("creates a write stream if the file is a string", () => {
-            promise = instance.downloadToFile(downloadLocation);
-
-            return promise.then(() => {
-                expect(fs.createWriteStream).toHaveBeenCalled();
-            });
-        });
-        it("does not create a write stream if the file is not a string", () => {
-            downloadLocation = {};
-            promise = instance.downloadToFile(downloadLocation);
-
-            return promise.then(() => {
-                expect(fs.createWriteStream).not.toHaveBeenCalled();
-            });
-        });
-        it("rejects if the response is an error", () => {
-            requestMock.get = () => {
-                requestMock.delayEmit({
-                    response: 1
-                }, "response", responseMock);
-                responseMock.delayEmit({
-                    error: 1
-                }, "error", {
-                    statusCode: 400
+            nock(host)
+                .get(uri.path())
+                .matchHeader("Authorization", token)
+                .reply(200, artifactContent, replyHeaders)
+                .get((path) => {
+                    return path !== uri.path();
+                })
+                .reply(404, {
+                    code: error.NOT_FOUND,
+                    message: "REQUEST DID NOT MATCH THE EXPECTED URI"
                 });
-                responseMock.delayEmit({
-                    finish: 1
-                }, "finish");
-
-                return requestMock;
-            };
-            responseHandler.isErrorCode.and.returnValue(true);
-            promise = instance.downloadToFile(downloadLocation);
-
-            return promise.then(jasmine.fail, () => {
-                expect(responseHandler.createErrorForResponse).toHaveBeenCalled();
-            });
         });
-        it("rejects on request error", () => {
-            requestMock.get = () => {
-                requestMock.delayEmit({
-                    error: 1
-                }, "error", responseMock);
-
-                return requestMock;
-            };
-            promise = instance.downloadToFile(downloadLocation);
-
-            return promise.then(jasmine.fail, () => {
-                expect(responseHandler.createErrorForResponse).toHaveBeenCalled();
-            });
-        });
-        it("rejects on response.pipe error", () => {
-            requestMock.get = () => {
-                requestMock.delayEmit({
-                    response: 1
-                }, "response", responseMock);
-                responseMock.delayEmit({
-                    error: 1
-                }, "error", {
-                    code: "socket_timeout"
+        describe(".download()", () => {
+            it("will return the artifact's contents", () => {
+                return artifact.download().then((content) => {
+                    expect(content).toBe(artifactContent);
                 });
-
-                return requestMock;
-            };
-            promise = instance.downloadToFile(downloadLocation);
-
-            return promise.then(jasmine.fail, () => {
-                expect(responseHandler.createErrorForResponse).toHaveBeenCalled();
             });
         });
+        describe(".downloadToFile()", () => {
+            it("will write the contents of the artifact to a file name", () => {
+                return artifact.downloadToFile(filename).then(() => {
+                    return fs.readFileAsync(filename, "utf8");
+                }).then((content) => {
+                    expect(content).toBe(artifactContent);
+                }).then(() => {
+                    return fs.unlinkAsync(filename);
+                }, () => {
+                    return fs.unlinkAsync(filename);
+                });
+            });
+            it("will write the contents of the artifact to a stream", () => {
+                var stream;
+
+                stream = new streamBuffers.WritableStreamBuffer();
+
+                return artifact.downloadToFile(stream).then(() => {
+                    expect(stream.getContentsAsString("utf8")).toBe(artifactContent);
+                });
+            });
+            it("will reject if an error happens", () => {
+                /* This test is in response to a bug where if
+                 * an error occured specifically when downloading to
+                 * a file it would blow up because it expected there
+                 * to be a response body but there was not.
+                 */
+                artifact.uri = `${uri}/MAKE_IT_FAIL`;
+
+                return artifact.downloadToFile(filename).then(() => {
+                    jasmine.fail("Did not expect things to be successful");
+
+                    return fs.unlinkAsync(filename);
+                }, (err) => {
+                    expect(err.code).toBe(error.NOT_FOUND);
+
+                    return fs.unlinkAsync(filename);
+                });
+            });
+        });
+    });
+    afterEach(() => {
+        return fs.unlinkAsync(filename).then(null, (err) => {
+            if (err.code !== "ENOENT") {
+                throw err;
+            }
+        });
+    });
+    afterAll(() => {
+        // So we don't get any weird conflicts in other tests.
+        nock.cleanAll();
     });
 });

@@ -18,7 +18,8 @@ describe("lib/index", () => {
         libOptions = {
             strictHostCheck: false,
             logLevel: "info",
-            timeoutDuration: 5
+            timeoutDuration: 5,
+            retries: 5
         };
         lib = libConstructor("https://api.shelf.com", libOptions);
         expect(lib.initReference).toEqual(jasmine.any(Function));

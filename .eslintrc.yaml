@@ -4,7 +4,8 @@ env:
     es6: true
     jasmine: true
     node: true
-extends: eslint:recommended
+extends:
+    - eslint:recommended
 rules:
     accessor-pairs: error
     array-bracket-spacing:
@@ -166,10 +167,7 @@ rules:
     object-curly-spacing: error
     object-property-newline: error
     object-shorthand: error
-    one-var:
-        - error
-        -
-            const: never
+    one-var: error
     operator-assignment: error
     operator-linebreak:
         - error

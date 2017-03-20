@@ -1,54 +1,57 @@
 "use strict";
 
 describe("lib/artifact-search", () => {
-    var ArtifactSearch, authToken, bluebird, error, host, HttpLinkHeader, instance, logger, path, refName, requestOptions, requestPromiseMock, responseHandler, searchParameters, ShelfError, URI;
+    var ArtifactSearch, error, expectedLinkList, instance, lib, linkList, nock, nockFactory, replyHeaders, requestBody, searchParameters, ShelfRequest, token, uri;
 
-    authToken = "abcd1234";
-    bluebird = require("bluebird");
-    error = require("../../lib/error")();
-    host = "exampleHost";
-    logger = require("../../lib/logger")();
-    HttpLinkHeader = require("http-link-header");
-    path = "example/path";
-    refName = "exampleRefName";
-    requestOptions = require("../../lib/request-options")({}, logger);
-    requestPromiseMock = require("../mock/request-promise-mock")();
-    ShelfError = require("../../lib/shelf-error")();
-    URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
-    ArtifactSearch = require("../../lib/artifact-search.js")(bluebird, error, logger, requestOptions, requestPromiseMock, responseHandler, ShelfError, URI);
+    lib = jasmine.createTestLib();
+    token = lib.token;
+    ShelfRequest = lib.container.resolve("ShelfRequest");
+    ArtifactSearch = lib.container.resolve("ArtifactSearch");
+    uri = lib.uri;
+    nockFactory = require("nock");
+    nock = nockFactory(lib.hostPrefix);
+    linkList = [
+        `${uri.path()}/2016-11-23T16:03:05.239Z`,
+        `${uri.path()}/2016-11-23T16:01:29.716Z`
+    ];
+    error = lib.error;
+
+    /* It comes back in this format because I should be able
+     * to provide this link directly to Reference.initArtifact
+     * which does not include "<refName>/artifact"
+     */
+    expectedLinkList = [
+        "/test123/2016-11-23T16:03:05.239Z",
+        "/test123/2016-11-23T16:01:29.716Z"
+    ];
+    replyHeaders = {
+        Link: []
+    };
+    linkList.forEach((item) => {
+        replyHeaders.Link.push(`<${item}>; rel="item"; title="artifact"`);
+    });
+
+    replyHeaders.Link = replyHeaders.Link.join(",");
     beforeEach(() => {
-        instance = new ArtifactSearch(host, refName, path, authToken);
-        spyOn(responseHandler, "handleErrorResponse");
-        spyOn(bluebird, "map").and.callThrough();
-        spyOn(bluebird, "reject").and.callThrough();
-        spyOn(bluebird, "resolve").and.callThrough();
+        instance = new ArtifactSearch(uri.toString(), new ShelfRequest(token));
+        nock.post(`${uri.path()}/_search`)
+            .matchHeader("Authorization", token)
+            .reply(201, (path, body) => {
+                requestBody = body;
+            }, replyHeaders);
     });
     describe(".search()", () => {
-        it("returns an array of URLs", () => {
+        it("returns an array of paths", () => {
             searchParameters = {
                 search: [
                     "example=123",
-                    "example=456"
+                    "other=456"
                 ]
             };
 
-            return instance.search(searchParameters).then((urls) => {
-                expect(urls).toEqual([
-                    "/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z",
-                    "/shelf-js-test/an-artifact/2016-11-23T16:01:29.716Z"
-                ]);
-            });
-        });
-        it("catches errors from requestPromise", () => {
-            requestPromiseMock.post.and.returnValue(bluebird.reject({
-                code: "exampleTimeoutError"
-            }));
-
-            return instance.search().then(() => {
-                expect(responseHandler.handleErrorResponse).toHaveBeenCalledWith({
-                    code: "exampleTimeoutError"
-                });
+            return instance.search(searchParameters).then((pathList) => {
+                expect(pathList).toEqual(expectedLinkList);
+                expect(JSON.parse(requestBody)).toEqual(searchParameters);
             });
         });
         describe(".validateSearchItem()", () => {
@@ -60,8 +63,8 @@ describe("lib/artifact-search", () => {
 
                 /* eslint-enable no-useless-escape */
 
-                return instance.search(searchParameters).then(jasmine.fail, () => {
-                    expect(bluebird.reject).toHaveBeenCalled();
+                return instance.search(searchParameters).then(jasmine.fail, (err) => {
+                    expect(err.code).toBe(error.FAILED_QUERY_VALIDATION);
                 });
             });
             it("resolves a valid query", () => {
@@ -69,27 +72,21 @@ describe("lib/artifact-search", () => {
                     search: "Valid=Query"
                 };
 
-                return instance.search(searchParameters).then(() => {
-                    expect(bluebird.resolve).toHaveBeenCalled();
-                });
+                return instance.search(searchParameters);
             });
             it("resolves a valid query with '=*'", () => {
                 searchParameters = {
                     search: "Valid=*Query"
                 };
 
-                return instance.search(searchParameters).then(() => {
-                    expect(bluebird.resolve).toHaveBeenCalled();
-                });
+                return instance.search(searchParameters);
             });
             it("resolves a valid query with ~=", () => {
                 searchParameters = {
                     search: "Valid~=Query"
                 };
 
-                return instance.search(searchParameters).then(() => {
-                    expect(bluebird.resolve).toHaveBeenCalled();
-                });
+                return instance.search(searchParameters);
             });
             it("rejects if the query isn't a string", () => {
                 searchParameters = {
@@ -98,25 +95,21 @@ describe("lib/artifact-search", () => {
                     }
                 };
 
-                return instance.search(searchParameters).then(jasmine.fail, () => {
-                    expect(bluebird.reject).toHaveBeenCalled();
+                return instance.search(searchParameters).then(jasmine.fail, (err) => {
+                    expect(err.code).toBe(error.FAILED_QUERY_VALIDATION);
                 });
             });
         });
         describe(".validateSearch()", () => {
             it("resolves the promise if the query list is falsy", () => {
-                return instance.search().then(() => {
-                    expect(bluebird.resolve).toHaveBeenCalled();
-                });
+                return instance.search();
             });
             it("processes a single query", () => {
                 searchParameters = {
                     search: "Valid=Query"
                 };
 
-                return instance.search(searchParameters).then(() => {
-                    expect(bluebird.map).toHaveBeenCalled();
-                });
+                return instance.search(searchParameters);
             });
             it("processes an array of queries", () => {
                 searchParameters = {
@@ -126,10 +119,12 @@ describe("lib/artifact-search", () => {
                     ]
                 };
 
-                return instance.search(searchParameters).then(() => {
-                    expect(bluebird.map).toHaveBeenCalled();
-                });
+                return instance.search(searchParameters);
             });
         });
+    });
+    afterAll(() => {
+        // So we don't get any weird conflicts in other tests.
+        nockFactory.cleanAll();
     });
 });
