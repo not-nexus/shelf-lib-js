@@ -12,3 +12,7 @@
 	- "invalid_request_data_format" is now a recognized error.
 2.1.1 (2017-03-09)
     - Making path for initSearch optional for root searches.
+2.2.0 (2017-03-21)
+    - Added retries.
+    - Replaced requests library with superagent.
+    - Refactored much of the request and error handling functionality.
