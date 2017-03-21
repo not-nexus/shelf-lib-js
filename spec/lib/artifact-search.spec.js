@@ -1,7 +1,7 @@
 "use strict";
 
 describe("lib/artifact-search", () => {
-    var ArtifactSearch, error, expectedLinkList, instance, lib, linkList, nock, nockFactory, replyHeaders, requestBody, searchParameters, ShelfRequest, token, uri;
+    var ArtifactSearch, error, expectedLinkList, instance, lib, nock, nockFactory, requestBody, searchParameters, ShelfRequest, standardLinkList, token, uri;
 
     lib = jasmine.createTestLib();
     token = lib.token;
@@ -10,38 +10,55 @@ describe("lib/artifact-search", () => {
     uri = lib.uri;
     nockFactory = require("nock");
     nock = nockFactory(lib.hostPrefix);
-    linkList = [
+    standardLinkList = [
         `${uri.path()}/2016-11-23T16:03:05.239Z`,
         `${uri.path()}/2016-11-23T16:01:29.716Z`
     ];
     error = lib.error;
 
-    /* It comes back in this format because I should be able
-     * to provide this link directly to Reference.initArtifact
-     * which does not include "<refName>/artifact"
-     */
-    expectedLinkList = [
-        "/test123/2016-11-23T16:03:05.239Z",
-        "/test123/2016-11-23T16:01:29.716Z"
-    ];
-    replyHeaders = {
-        Link: []
-    };
-    linkList.forEach((item) => {
-        replyHeaders.Link.push(`<${item}>; rel="item"; title="artifact"`);
-    });
 
-    replyHeaders.Link = replyHeaders.Link.join(",");
-    beforeEach(() => {
-        instance = new ArtifactSearch(uri.toString(), new ShelfRequest(token));
-        nock.post(`${uri.path()}/_search`)
+    /**
+     * @param {Array.<string>} linkList
+     * @param {(string|undefined)} path
+     */
+    function configureSearch(linkList, path) {
+        var replyHeaders;
+
+        replyHeaders = {
+            Link: []
+        };
+        path = path || uri.path();
+        linkList.forEach((item) => {
+            replyHeaders.Link.push(`<${item}>; rel="item"; title="artifact"`);
+        });
+        replyHeaders.Link = replyHeaders.Link.join(",");
+        nock.post(`${path}/_search`)
             .matchHeader("Authorization", token)
-            .reply(201, (path, body) => {
+            .reply(201, (_, body) => {
                 requestBody = body;
             }, replyHeaders);
+    }
+
+    beforeEach(() => {
+        instance = new ArtifactSearch(uri.toString(), new ShelfRequest(token));
+        requestBody = null;
+
+        /* It comes back in this format because I should be able
+         * to provide this link directly to Reference.initArtifact
+         * which does not include "<refName>/artifact"
+         */
+        expectedLinkList = [
+            "/test123/2016-11-23T16:03:05.239Z",
+            "/test123/2016-11-23T16:01:29.716Z"
+        ];
+    });
+    afterEach(() => {
+        // So we don't get any weird conflicts in other tests.
+        nockFactory.cleanAll();
     });
     describe(".search()", () => {
         it("returns an array of paths", () => {
+            configureSearch(standardLinkList);
             searchParameters = {
                 search: [
                     "example=123",
@@ -54,7 +71,29 @@ describe("lib/artifact-search", () => {
                 expect(JSON.parse(requestBody)).toEqual(searchParameters);
             });
         });
+        it("can handle relative links", () => {
+            var additionalPath, path;
+
+            additionalPath = "way/much/more/longer";
+            path = `${uri.path()}/${additionalPath}`;
+            configureSearch([
+                "../blah1",
+                "../../blah2"
+            ], path);
+            expectedLinkList = [
+                "/test123/way/much/more/blah1",
+                "/test123/way/much/blah2"
+            ];
+            instance = new ArtifactSearch(`${uri.toString()}/${additionalPath}`, new ShelfRequest(token));
+
+            return instance.search().then((pathList) => {
+                expect(pathList).toEqual(expectedLinkList);
+            });
+        });
         describe(".validateSearchItem()", () => {
+            beforeEach(() => {
+                configureSearch(standardLinkList);
+            });
             it("rejects if a search value doesn't provide the section when using the search string form =", () => {
                 /* eslint-disable no-useless-escape */
                 searchParameters = {
@@ -101,6 +140,9 @@ describe("lib/artifact-search", () => {
             });
         });
         describe(".validateSearch()", () => {
+            beforeEach(() => {
+                configureSearch(standardLinkList);
+            });
             it("resolves the promise if the query list is falsy", () => {
                 return instance.search();
             });
@@ -122,9 +164,5 @@ describe("lib/artifact-search", () => {
                 return instance.search(searchParameters);
             });
         });
-    });
-    afterAll(() => {
-        // So we don't get any weird conflicts in other tests.
-        nockFactory.cleanAll();
     });
 });

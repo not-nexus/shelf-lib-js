@@ -16,7 +16,7 @@ describe("lib/shelf-request", () => {
             var stream;
 
             nock.get(lib.uri.path())
-                .times(4)
+                .times(3)
                 .delay(1000)
                 .reply(200, "SHOULD NEVER GET THE RESPONSE");
             stream = new streamBuffers.WritableStreamBuffer();
@@ -36,6 +36,19 @@ describe("lib/shelf-request", () => {
             return shelfRequest.downloadToStream(lib.uri.toString(), stream).then(jasmine.fail, (err) => {
                 expect(err.message).toBe("write after end");
                 expect(err.code).toBe(lib.error.UNKNOWN);
+            });
+        });
+    });
+    describe(".attachGenericHandlers() handlers", () => {
+        it("doesn't blow up if a response doesn't exist", () => {
+            // Forcing a timeout.
+            nock.get(lib.uri.path())
+                .times(3)
+                .delay(1000)
+                .reply(200, "SHOULD NEVER GET THE RESPONSE");
+
+            return shelfRequest.get(lib.uri.toString()).then(jasmine.fail, (err) => {
+                expect(err.code).toBe(lib.error.TIMEOUT, `Failed with message "${err.message}"`);
             });
         });
     });
@@ -62,7 +75,7 @@ describe("lib/shelf-request", () => {
             });
         });
     });
-    afterAll(() => {
+    afterEach(() => {
         nockFactory.cleanAll();
     });
 });

@@ -179,7 +179,7 @@ describe("lib/response-handler", () => {
                     link: "</morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z>; rel=\"item\"; title=\"artifact\", </morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:01:29.716Z>; rel=\"item\"; title=\"artifact\", </morty/artifact/shelf-js-test/an-artifact/2016-11-30T15:00:38.132Z>; rel=\"item\"; title=\"artifact\""
                 },
                 request: {
-                    href: "https://my-shelf.example.com/morty/artifact/_search"
+                    url: "https://my-shelf.example.com/morty/artifact/_search"
                 }
             };
             urls = responseHandler.resolveLinkHeaders(response);
@@ -204,7 +204,7 @@ describe("lib/response-handler", () => {
                     link: "</morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z>; rel=\"item\"; title=\"artifact\""
                 },
                 request: {
-                    href: "https://my-shelf.example.com/morty/artifact/_search"
+                    url: "https://my-shelf.example.com/morty/artifact/_search"
                 }
             };
             urls = responseHandler.resolveLinkHeaders(response);
