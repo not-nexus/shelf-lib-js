@@ -32,9 +32,12 @@ Options
 
 The second parameter when requiring the library is an object holding various options that can change the behavior of the library.
 
-* `logLevel` - Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". WARNING: If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril.
-* `strictHostCheck` - Turns off request strictHostCheck. This defaults to `true`.
-* `timeoutDuration` - Sets the amount of time in milliseconds before requests timeout. This defaults to 300000 (five minutes).
+| Name              | Type    | Description                                                                                                                                                                                                                                             |
+|-------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `logLevel`        | string  | Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". WARNING: If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril. |
+| `strictHostCheck` | boolean | Turns off request strictHostCheck. This defaults to `true`.                                                                                                                                                                                             |
+| `timeoutDuration` | int     | Sets the amount of time in milliseconds before requests timeout. This defaults to 300000 (five minutes).                                                                                                                                                |
+| `retries`         | int     | The number of times we should retry the request. This functionality applies to TCP level errors (socket timeout for example) and anything within the 500 HTTP status code range.                                                                        |
 
 Example:
 
@@ -96,6 +99,8 @@ Or:
 Downloading
 -----------
 
+> WARNING: Do not use `shelfLib~Artifact.download` for large artifacts. By default node's max memory size is 1.76GB (for 64 bit systems). This will blow up if your artifact is approaching that size. Use `shelfLib~Artifact.downloadToFile` instead.
+
 To download the contents and receive it in a variable:
 
     artifact.download().then((data) => {
@@ -104,10 +109,10 @@ To download the contents and receive it in a variable:
         console.log("Hit an error: " + err);
     });
 
-To upload an artifact from a file:
+To download an artifact to a file:
 
-    artifact.uploadFromFile("./file-with-artifact-contents.txt").then((uploadLocation) => {
-        console.log("Uploaded contents to: " + downloadLocation);
+    artifact.downloadToFile("./file-with-artifact-contents.txt").then(() => {
+        console.log("Uploaded contents to: ./file-with-artifact-contents.txt");
     }, (err) => {
         console.log("Hit an error: " + err);
     });

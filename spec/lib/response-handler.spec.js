@@ -1,15 +1,11 @@
 "use strict";
 
 describe("lib/response-handler", () => {
-    var bluebird, error, HttpLinkHeader, logger, responseHandler, ShelfError, URI;
+    var error, lib, responseHandler;
 
-    bluebird = require("bluebird");
-    error = require("../../lib/error")();
-    logger = require("../../lib/logger")();
-    HttpLinkHeader = require("http-link-header");
-    ShelfError = require("../../lib/shelf-error")();
-    URI = require("urijs");
-    responseHandler = require("../../lib/response-handler")(bluebird, error, HttpLinkHeader, logger, ShelfError, URI);
+    lib = jasmine.createTestLib();
+    error = lib.error;
+    responseHandler = lib.container.resolve("responseHandler");
     describe(".isErrorCode()", () => {
         it("returns false if the status code is within the right range", () => {
             expect(responseHandler.isErrorCode(300)).toBe(false);
@@ -28,42 +24,85 @@ describe("lib/response-handler", () => {
         });
     });
     describe(".createErrorForResponse()", () => {
-        var errorFromResponse, errorResponse;
+        var createdErr, err;
 
         it("returns any unknown errors", () => {
-            errorResponse = {
-                body: {
-                    code: "anUnknownError"
-                }
-            };
-            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
-            expect(errorFromResponse.message).toBe(error.UNKNOWN);
-            expect(errorFromResponse.code).toBe(error.UNKNOWN);
+            err = new Error("Oh no!");
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe(err.message);
+            expect(createdErr.code).toBe(error.UNKNOWN);
         });
-        it("returns the message with an unknown error if it exists", () => {
+        it("handles an unknown shelf error.", () => {
             var body;
 
             body = {
                 code: "anUnknownError",
                 message: "Oh no!"
             };
-            errorResponse = {
-                error: 500,
-                response: {
-                    body
-                }
+            err = new Error("Some Error");
+            err.status = 504;
+            err.response = {
+                body
             };
-            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
-            expect(errorFromResponse.message).toBe(body.message);
-            expect(errorFromResponse.code).toBe(error.UNKNOWN);
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Oh no!");
+            expect(createdErr.code).toBe(error.UNKNOWN);
+        });
+        it("handles generic 404", () => {
+            err = new Error("Not found");
+            err.response = {
+                text: "<h1>Not Found</h1>"
+            };
+            err.status = 404;
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Got status code of \"404\" with body \"<h1>Not Found</h1>\"");
+            expect(createdErr.code).toBe(error.NOT_FOUND);
+        });
+        it("handles generic 500", () => {
+            err = new Error("Not found");
+            err.response = {
+                text: "<h1>Internal Server Error</h1>"
+            };
+            err.status = 500;
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Got status code of \"500\" with body \"<h1>Internal Server Error</h1>\"");
+            expect(createdErr.code).toBe(error.INTERNAL_SERVER_ERROR);
+        });
+        it("handles generic unknown error", () => {
+            err = new Error("Not found");
+            err.response = {
+                text: "<h1>Gateway Timeout</h1>"
+            };
+            err.status = 504;
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Got status code of \"504\" with body \"<h1>Gateway Timeout</h1>\"");
+            expect(createdErr.code).toBe(error.UNKNOWN);
         });
         it("returns a timeout error", () => {
-            errorResponse = {
-                code: "exampleTimeoutError"
-            };
-            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
-            expect(errorFromResponse.message).toBe("Socket Timeout");
-            expect(errorFromResponse.code).toBe(error.TIMEOUT);
+            err = new Error("Timeout of 1000ms exceeded");
+            err.code = "ECONNABORTED";
+            err.errno = "ETIME";
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("A socket timeout occured");
+            expect(createdErr.code).toBe(error.TIMEOUT);
+        });
+        it("handles connection refused", () => {
+            err = new Error("Error: connect ECONNREFUSED 127.0.0.1:8888");
+            err.code = "ECONNREFUSED";
+            err.errno = "ECONNREFUSED";
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Unable to make a connection to the server. This is likely because the port we are trying to connect to is not listening");
+            expect(createdErr.code).toBe(error.CONNECTION_REFUSED);
+        });
+        it("Handles unable to resolve hostname", () => {
+            err = new Error("getaddrinfo ENOTFOUND some-shelf-domain.com some-shelf-domain.com:80");
+            err.code = "ENOTFOUND";
+            err.errno = "ENOTFOUND";
+            err.host = "some-shelf-domain.com";
+            err.port = "80";
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe("Could not resolve the host provided");
+            expect(createdErr.code).toBe(error.COULD_NOT_RESOLVE_HOST);
         });
         it("recognizes invalid_request_data_format", () => {
             var body;
@@ -72,29 +111,37 @@ describe("lib/response-handler", () => {
                 code: error.INVALID_REQUEST_DATA_FORMAT,
                 message: "Invalid blah blah blah"
             };
-            errorResponse = {
-                error: 500,
-                response: {
-                    body
-                }
+            err = new Error("Error message");
+            err.status = 400;
+            err.response = {
+                body
             };
-            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
-            expect(errorFromResponse.message).toBe(body.message);
-            expect(errorFromResponse.code).toBe(body.code);
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe(body.message);
+            expect(createdErr.code).toBe(body.code);
         });
         it("returns known errors", () => {
-            errorResponse = {
-                error: "duplicate_artifact",
-                response: {
-                    body: {
-                        code: "duplicate_artifact",
-                        message: "A duplicate artifact error message"
-                    }
-                }
+            var body;
+
+            body = {
+                code: "duplicate_artifact",
+                message: "A duplicate artifact error message"
             };
-            errorFromResponse = responseHandler.createErrorForResponse(errorResponse);
-            expect(errorFromResponse.message).toBe("A duplicate artifact error message");
-            expect(errorFromResponse.code).toBe(error.DUPLICATE_ARTIFACT);
+            err = new Error("401 whatever");
+            err.status = 401;
+            err.response = {
+                body
+            };
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe(body.message);
+            expect(createdErr.code).toBe(body.code);
+        });
+        it("handles unknown tcp errors", () => {
+            err = new Error("Error: Connection Reset");
+            err.code = "ECONNRESET";
+            createdErr = responseHandler.createErrorForResponse(err);
+            expect(createdErr.message).toBe(err.message);
+            expect(createdErr.code).toBe(error.UNKNOWN);
         });
     });
     describe(".handleErrorResponse()", () => {
@@ -132,7 +179,7 @@ describe("lib/response-handler", () => {
                     link: "</morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z>; rel=\"item\"; title=\"artifact\", </morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:01:29.716Z>; rel=\"item\"; title=\"artifact\", </morty/artifact/shelf-js-test/an-artifact/2016-11-30T15:00:38.132Z>; rel=\"item\"; title=\"artifact\""
                 },
                 request: {
-                    href: "https://my-shelf.example.com/morty/artifact/_search"
+                    url: "https://my-shelf.example.com/morty/artifact/_search"
                 }
             };
             urls = responseHandler.resolveLinkHeaders(response);
@@ -157,7 +204,7 @@ describe("lib/response-handler", () => {
                     link: "</morty/artifact/shelf-js-test/an-artifact/2016-11-23T16:03:05.239Z>; rel=\"item\"; title=\"artifact\""
                 },
                 request: {
-                    href: "https://my-shelf.example.com/morty/artifact/_search"
+                    url: "https://my-shelf.example.com/morty/artifact/_search"
                 }
             };
             urls = responseHandler.resolveLinkHeaders(response);
