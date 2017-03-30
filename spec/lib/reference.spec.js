@@ -62,6 +62,9 @@ describe("lib/reference", () => {
         it("passes the full URI along to the Artifact", () => {
             expect(artifact.uri).toBe(`${lib.uri.toString()}/2016-12-06T15:58:59.670Z`);
         });
+        it("passes along the ShelfRequest", () => {
+            expect(artifact.shelfRequest).toBe(instance.shelfRequest);
+        });
     });
     describe(".initSearch()", () => {
         it("instantiates a new ArtifactSearch", () => {
