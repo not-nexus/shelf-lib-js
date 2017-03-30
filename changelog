@@ -16,3 +16,7 @@
     - Added retries.
     - Replaced requests library with superagent.
     - Refactored much of the request and error handling functionality.
+2.2.1 (2017-03-30)
+    - Fixing bug where Reference.initArtifactWithTimestamp would pass along a
+    auth token instead of passing along a ShelfRequest object which would make
+    it explode if you tried to use the artifact.
