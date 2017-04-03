@@ -48,6 +48,7 @@
     "dependencies": {
         "bluebird": "^3.4.6",
         "dizzy": "^2.0.5",
+        "dizzy-promisify-bluebird": "^1.0.3",
         "http-link-header": "^0.7.0",
         "log": "^1.4.0",
         "superagent": "^3.5.0",

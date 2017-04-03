@@ -4,7 +4,6 @@ describe("lib/artifact", () => {
     var Artifact, artifact, artifactContent, error, filename, fs, host, lib, nock, ShelfRequest, streamBuffers, streamModule, token, uri;
 
     nock = require("nock");
-    fs = require("more-promises").promisifyAll(require("fs"));
     streamModule = require("stream");
     streamBuffers = require("stream-buffers");
     filename = "upload-download-test-file";
@@ -19,6 +18,7 @@ describe("lib/artifact", () => {
         ShelfRequest = lib.container.resolve("ShelfRequest");
         Artifact = lib.container.resolve("Artifact");
         artifact = new Artifact(uri.toString(), new ShelfRequest(token));
+        fs = lib.container.resolve("fsAsync");
     });
     describe("upload method", () => {
         var fileContent, interceptor;
@@ -158,14 +158,35 @@ describe("lib/artifact", () => {
                  */
                 artifact.uri = `${uri}/MAKE_IT_FAIL`;
 
-                return artifact.downloadToFile(filename).then(() => {
-                    jasmine.fail("Did not expect things to be successful");
-
-                    return fs.unlinkAsync(filename);
-                }, (err) => {
+                return artifact.downloadToFile(filename).then(jasmine.fail, (err) => {
                     expect(err.code).toBe(error.NOT_FOUND);
+                });
+            });
+            it("only cleans up files when a filepath is supplied", () => {
+                var stream;
 
-                    return fs.unlinkAsync(filename);
+                stream = new streamBuffers.WritableStreamBuffer();
+                artifact.uri = `${uri}/MAKE_IT_FAIL`;
+
+                return artifact.downloadToFile(stream).then(jasmine.fail, (err) => {
+                    expect(err.code).toBe(error.NOT_FOUND);
+                });
+            });
+            it("logs errors that occur when attempting to cleanup file", () => {
+                artifact.uri = `${uri}/MAKE_IT_FAIL`;
+                spyOn(fs, "unlinkAsync").and.returnValue(Promise.reject(new Error("no")));
+
+                return artifact.downloadToFile(filename).then(jasmine.fail, (err) => {
+                    expect(err.code).toBe(error.NOT_FOUND);
+                    fs.unlinkAsync.and.callThrough();
+
+                    /* Serves dual purpose, removes the test file and blows up
+                     * if it is not there. We spied on unlink and forced it to
+                     * fail so the file should be there.
+                     */
+                    return fs.unlinkAsync(filename).then(null, (unlinkErr) => {
+                        throw unlinkErr;
+                    });
                 });
             });
         });
