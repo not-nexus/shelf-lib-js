@@ -162,7 +162,7 @@ describe("lib/artifact", () => {
                     expect(err.code).toBe(error.NOT_FOUND);
                 });
             });
-            it("only cleans up files when a filepath is supplied", () => {
+            it("does not attempt to cleanup a non-existant file", () => {
                 var stream;
 
                 stream = new streamBuffers.WritableStreamBuffer();
@@ -184,8 +184,8 @@ describe("lib/artifact", () => {
                      * if it is not there. We spied on unlink and forced it to
                      * fail so the file should be there.
                      */
-                    return fs.unlinkAsync(filename).then(null, (unlinkErr) => {
-                        throw unlinkErr;
+                    return fs.unlinkAsync(filename).then(null, () => {
+                        throw new Error("Test expected a file to cleanup.");
                     });
                 });
             });
