@@ -20,3 +20,5 @@
     - Fixing bug where Reference.initArtifactWithTimestamp would pass along a
     auth token instead of passing along a ShelfRequest object which would make
     it explode if you tried to use the artifact.
+2.2.2 (2017-04-03)
+    - downloadToFile cleans up residual file if an error occurs.

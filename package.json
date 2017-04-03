@@ -1,6 +1,6 @@
 {
     "name": "shelf-lib",
-    "version": "2.2.1",
+    "version": "2.2.2",
     "description": "A library that allows the user to interact with Shelf.",
     "main": "./lib/index.js",
     "scripts": {
