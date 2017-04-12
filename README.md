@@ -24,7 +24,7 @@ API
 ---
 
 
-### `shelfLib(origin, [libOptions])`
+#### `shelfLib(origin, [libOptions])`
 
 * `origin` `{string}` - The protocol and host for connecting to Shelf. For example `https://api.shelf.com`.
 * `libOptions` `{Object}` - An option object for configuring shelf-lib.
@@ -47,7 +47,7 @@ Example:
     var shelfLib = require("shelf-lib")("https://api.shelf.com", libOptions);
 
 
-### `shelfLib~initReference(refName, authToken)`
+#### `shelfLib~initReference(refName, authToken)`
 
 * `refName` `{string}` - Could also be called "bucket", "storage" or "shelf". This represents a specific storage space.
 * `authToken` `{string}` - The authentication token used to authenticate with the `reference`
@@ -58,13 +58,12 @@ Example:
     var reference = shelfLib.initReference("shadow", "bDMKbnnzrDlmNs34NHGkvHOWDVdE4okV");
 
 
-reference
----------
+### reference
 
 Represents what people might call a "reference name", "bucket", "storage" or "shelf". See [the Shelf documentation](https://github.com/not-nexus/shelf/blob/master/docs/configuration.md) for more information.
 
 
-### `reference~initArtifact(path)`
+#### `reference~initArtifact(path)`
 
 * `path` `{string}` - Just the path to the artifact inside of the reference. It is `<path>` in `https://api.shelf.com/shadow/artifact/<path>`.
 * Returns: `{Object}` - An [artifact](#artifact) object.
@@ -74,7 +73,7 @@ Example:
     var artifact = reference.initArtifact("/my/path");
 
 
-### `reference~initArtifactWithTimestamp(path)`
+#### `reference~initArtifactWithTimestamp(path)`
 
 * `path` `{string}` - Just the path to the artifact inside of the reference. It is `<path>` in `https://api.shelf.com/shadow/artifact/<path>/2016-11-01T14:37:04.151Z`.
 * Returns: `{Object}`
@@ -84,7 +83,7 @@ Example:
     var artifact = reference.initWithTimestampArtifact("/my/path");
 
 
-### `reference.initSearch([path])`
+#### `reference.initSearch([path])`
 
 Creates an [artifactSearch](#artifactsearch) object.
 
@@ -96,13 +95,12 @@ Example:
     var artifactSearch = reference.initSearch("/my/path");
 
 
-artifact
---------
+### artifact
 
 Encapsulates functionality specific to an artifact like uploading and downloading.
 
 
-### `artifact~upload(content)`
+#### `artifact~upload(content)`
 
 Uploads the content provided to the path that the [artifact](#artifact) object to set up to point to. It returns a Promise which will resolve to have a path to where it was uploaded to. This should be usable with `reference~initArtifact`.
 
@@ -116,7 +114,7 @@ Example:
     });
 
 
-### `artifact~uploadFromFile(file)`
+#### `artifact~uploadFromFile(file)`
 
 Uploads the file provided to the path that the [artifact](#artifact) object is set up to point to. It returns a Promise which will resolve to have a path to where it was uploaded to. This should be usable with [reference](#reference)`.initArtifact`.
 
@@ -130,7 +128,7 @@ Example:
     });
 
 
-### `artifact~download()`
+#### `artifact~download()`
 
 Downloads the contents of the artifact and returns them as a UTF8 encoded string.
 
@@ -145,7 +143,7 @@ Example:
     });
 
 
-### `artifact~downloadToFile(file)`
+#### `artifact~downloadToFile(file)`
 
 Downloads the content of the aritfact to the file provided. This is a useful function to call for very large artifacts.
 
@@ -159,8 +157,7 @@ Example:
     });
 
 
-metadata
---------
+### metadata
 
 An object which deals with metadata for a particular artifact.
 
@@ -195,7 +192,7 @@ Example:
         }
     };
 
-### `metadata.getAll()`
+#### `metadata.getAll()`
 
 Gets all metadata for an [artifact](#artifact).
 
@@ -208,7 +205,7 @@ Example:
     });
 
 
-### `metadata.getProperty(name)`
+#### `metadata.getProperty(name)`
 
 Gets a specific metadataProperty.
 
@@ -222,7 +219,7 @@ Example:
     });
 
 
-### `metadata.updateAll(metadataValues)`
+#### `metadata.updateAll(metadataValues)`
 
 Updates all metadata at once for a particular artifact. This should be used when bulk updates need to be made. For more information see the [Shelf Docs](https://github.com/not-nexus/shelf/blob/master/docs/api/metadata.md).
 
@@ -249,7 +246,7 @@ Example:
      });
 
 
-### `metadata.updateProperty(name, metadataProperty)`
+#### `metadata.updateProperty(name, metadataProperty)`
 
 Updates a single metadata property. This function will also create the property if it doesn't exist.
 
@@ -268,7 +265,7 @@ Example:
     });
 
 
-### `metadata.createProperty(name, metadataProperty)`
+#### `metadata.createProperty(name, metadataProperty)`
 
 Creates a single metadata property. This will error if the property already exists.
 
@@ -287,7 +284,7 @@ Example:
     });
 
 
-### `metadata.deleteProperty(name)`
+#### `metadata.deleteProperty(name)`
 
 Deletes a single property.
 
@@ -301,8 +298,7 @@ Example:
     });
 
 
-artifactSearch
---------------
+### artifactSearch
 
 Handles searching for artifacts by searchParameters.
 
@@ -311,7 +307,7 @@ Handles searching for artifacts by searchParameters.
 * `limit` `{int}` - The most amount of links  you would like back from a search.
 
 
-### `artifactSearch.search(searchParameters)`
+#### `artifactSearch.search(searchParameters)`
 
 Searches for artifacts.
 
