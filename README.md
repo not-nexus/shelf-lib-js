@@ -7,13 +7,17 @@ shelf-lib-js
 Introduction
 ------------
 
-shelf-lib-js is a Node.js library for using [shelf](https://github.com/not-nexus/shelf).
+shelf-lib is a Node.js library for using [shelf](https://github.com/not-nexus/shelf).
 
 
 Installation
 ------------
 
-To install shelf-lib-js for development, run the following commands:
+You can install shelf-lib from npm.
+
+    npm install --save shelf-lib
+
+To install shelf-lib for development, run the following commands:
 
     git clone https://github.com/not-nexus/shelf-lib-js.git
     cd shelf-lib-js
@@ -24,9 +28,9 @@ API
 ---
 
 
-#### `shelfLib(origin, [libOptions])`
+#### `shelfLib(origin[, libOptions])`
 
-* `origin` `{string}` - The protocol and host for connecting to Shelf. For example `https://api.shelf.com`.
+* `origin` `{string}` - The protocol and host for connecting to Shelf.
 * `libOptions` `{Object}` - An option object for configuring shelf-lib.
 * Returns: `{Object}`.
 
@@ -50,7 +54,7 @@ Example:
 #### `shelfLib~initReference(refName, authToken)`
 
 * `refName` `{string}` - Could also be called "bucket", "storage" or "shelf". This represents a specific storage space.
-* `authToken` `{string}` - The authentication token used to authenticate with the `reference`
+* `authToken` `{string}` - The authentication token used to authenticate with the `reference`.
 * Returns: `{Object}` - A [reference](#reference) object.
 
 Example:
@@ -102,10 +106,10 @@ Encapsulates functionality specific to an artifact like uploading and downloadin
 
 #### `artifact~upload(content)`
 
-Uploads the content provided to the path that the [artifact](#artifact) object to set up to point to. It returns a Promise which will resolve to have a path to where it was uploaded to. This should be usable with `reference~initArtifact`.
+Uploads the content provided to the path that the [artifact](#artifact) object to set up to point to.
 
 * `content` `{(string|Buffer|stream~ReadStream)}` - What you want uploaded as an artifact.
-* Returns: `{Promise.<string>}`.
+* Returns: `{Promise.<string>}` - Resolves with the path to where it was uploaded to. This should be usable by [reference](#reference)`.initArtifact`.
 
 Example:
 
@@ -119,7 +123,7 @@ Example:
 Uploads the file provided to the path that the [artifact](#artifact) object is set up to point to. It returns a Promise which will resolve to have a path to where it was uploaded to. This should be usable with [reference](#reference)`.initArtifact`.
 
 * `file` `{(string|stream~ReadStream)}` - If it is a string it should be the path to a file to upload.
-* Returns: `{Promise.<string>}`.
+* Returns: `{Promise.<string>}`. Resolves with the path to where it was uploaded to. This should be usable by [reference](#reference)`.initArtifact`.
 
 Example:
 
@@ -177,7 +181,7 @@ Example:
         immutable: false
     };
 
-The Second one is called `metadataValues` which is an object whose keys are the name of a property and the value is a `metadataProperty`.
+The second one is called `metadataValues` which is an object whose keys are the name of a property and the value is a `metadataProperty`.
 
 Example:
 
