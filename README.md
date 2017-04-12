@@ -7,224 +7,336 @@ shelf-lib-js
 Introduction
 ------------
 
-shelf-lib-js is a Node.js library for using [shelf](https://github.com/not-nexus/shelf).
+shelf-lib is a Node.js library for using [shelf](https://github.com/not-nexus/shelf).
 
 
 Installation
 ------------
 
-To install shelf-lib-js for development, run the following commands:
+You can install shelf-lib from npm.
+
+    npm install --save shelf-lib
+
+To install shelf-lib for development, run the following commands:
 
     git clone https://github.com/not-nexus/shelf-lib-js.git
     cd shelf-lib-js
     npm install
 
 
-Usage
------
-
-    // Import the library.
-    var shelfLib = require("shelf-lib")("<URL where pyshelf is hosted>");
+API
+---
 
 
-Options
------------
+#### `shelfLib(origin[, libOptions])`
 
-The second parameter when requiring the library is an object holding various options that can change the behavior of the library.
+* `origin` `{string}` - The protocol and host for connecting to Shelf.
+* `libOptions` `{Object}` - An option object for configuring shelf-lib.
+* Returns: `{Object}`.
 
-| Name              | Type    | Description                                                                                                                                                                                                                                             |
-|-------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `logLevel`        | string  | Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". WARNING: If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril. |
-| `strictHostCheck` | boolean | Turns off request strictHostCheck. This defaults to `true`.                                                                                                                                                                                             |
-| `timeoutDuration` | int     | Sets the amount of time in milliseconds before requests timeout. This defaults to 300000 (five minutes).                                                                                                                                                |
-| `retries`         | int     | The number of times we should retry the request. This functionality applies to TCP level errors (socket timeout for example) and anything within the 500 HTTP status code range.                                                                        |
+The following are properties available in `libOptions`.
+
+* `logLevel` `{string}` - Sets the desired amount of logging. Values can be: "info", "debug", or "warning". The value defaults to "warning". **WARNING:** If the logLevel is set to "debug", the logger will log your Shelf authentication token. Log with "debug" at your own peril.
+* `strictHostCheck` `{boolean}` - Turns off request strictHostCheck. This defaults to `true`.
+* `timeoutDuration` `{int}` - Sets the amount of time in milliseconds before requests timeout. This defaults to 300000 (five minutes).
+* `retries` `{int}` - The number of times we should retry the request. This functionality applies to TCP level errors (socket timeout for example) and anything within the 500 HTTP status code range.
 
 Example:
 
     var libOptions = {
-        logLevel: "debug",          // Sets the desired amount of logging.
-                                    // Values can be: "info", "debug", or "warning".
-                                    // Defaults to "warning".
-        "strictHostCheck": false    // Turns off request strictHostCheck.
-                                    // Defaults to true.
+        logLevel: "debug",
+        strictHostCheck: false
     };
 
-    var shelfLib = require("shelf-lib")("<URL where shelf is hosted>", libOptions);
+    var shelfLib = require("shelf-lib")("https://api.shelf.com", libOptions);
 
 
-Reference Creation
-------------------
+#### `shelfLib~initReference(refName, authToken)`
 
-    // Grab a reference to a bucket.
-    var reference = shelfLib.initReference("refName", "<super secret pyshelf API key>");
+* `refName` `{string}` - This represents a specific storage space. It is also referred to as "bucket", "storage" or "shelf".
+* `authToken` `{string}` - The authentication token used to authenticate with the `reference`.
+* Returns: `{Object}` - A [reference](#reference) object.
 
+Example:
 
-Artifact Reference Creation
----------------------------
-
-    // Grab the artifact reference at location "/path".
-    var artifact = reference.initArtifact("path");
+    var reference = shelfLib.initReference("shadow", "bDMKbnnzrDlmNs34NHGkvHOWDVdE4okV");
 
 
-Uploading
----------
+### reference
 
-To upload an artifact with the contents from a variable:
-
-    artifact.upload("Hello world!").then((uploadLocation) => {
-        console.log("Uploaded content to: " + uploadLocation);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-To upload an artifact from a file:
-
-    artifact.uploadFromFile("./file-to-upload.txt").then((uploadLocation) => {
-        console.log("Uploaded content to: " + uploadLocation);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-Or:
-
-    var fileReadStream = fs.createReadStream("./file-to-upload.txt");
-
-    artifact.uploadFromFile(fileReadStream).then((uploadLocation) => {
-        console.log("Uploaded content to: " + uploadLocation);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
+Represents what people might call a "reference name", "bucket", "storage" or "shelf". See [the Shelf documentation](https://github.com/not-nexus/shelf/blob/master/docs/configuration.md) for more information.
 
 
-Downloading
------------
+#### `reference~initArtifact(path)`
 
-> WARNING: Do not use `shelfLib~Artifact.download` for large artifacts. By default node's max memory size is 1.76GB (for 64 bit systems). This will blow up if your artifact is approaching that size. Use `shelfLib~Artifact.downloadToFile` instead.
+* `path` `{string}` - Just the path to the artifact inside of the reference. It is `<path>` in `https://api.shelf.com/shadow/artifact/<path>`.
+* Returns: `{Object}` - An [artifact](#artifact) object.
 
-To download the contents and receive it in a variable:
+Example:
 
-    artifact.download().then((data) => {
-        console.log("Got data: " + data);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
+    var artifact = reference.initArtifact("/my/path");
 
-To download an artifact to a file:
 
-    artifact.downloadToFile("./file-with-artifact-contents.txt").then(() => {
-        console.log("Uploaded contents to: ./file-with-artifact-contents.txt");
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
+#### `reference~initArtifactWithTimestamp(path)`
 
-Or:
+* `path` `{string}` - Just the path to the artifact inside of the reference. It is `<path>` in `https://api.shelf.com/shadow/artifact/<path>/2016-11-01T14:37:04.151Z`.
+* Returns: `{Object}`
 
-    var fileReadStream = fs.createReadStream("./file-with-artifact-contents.txt");
+Example:
 
-    artifact.downloadToFile(fileReadStream).then((downloadLocation) => {
-        console.log("Downloaded contents to: " + downloadLocation);
-    }, (err) => {
-        console.log("Hit an error: " + err);
+    var artifact = reference.initWithTimestampArtifact("/my/path");
+
+
+#### `reference.initSearch([path])`
+
+Creates an [artifactSearch](#artifactsearch) object.
+
+* `path` `{string}` - A path to a directory inside [reference](#reference). It is `<path>` in the following example `https://api.shelf.com/shadow/artifact/<path>/_search`.
+* Returns: `{Object}` - An [artifactSearch](#artifactsearch) object.
+
+Example:
+
+    var artifactSearch = reference.initSearch("/my/path");
+
+
+### artifact
+
+Encapsulates functionality specific to an artifact like uploading and downloading.
+
+
+#### `artifact~upload(content)`
+
+Uploads the content provided to the path that the [artifact](#artifact) object to set up to point to.
+
+* `content` `{(string|Buffer|stream~ReadStream)}` - What you want uploaded as an artifact.
+* Returns: `{Promise.<string>}` - Resolves with the path to where it was uploaded to. This should be usable by [reference](#reference)`.initArtifact`.
+
+Example:
+
+    artifact.upload("hello, this is an artifact").then((loc) => {
+        console.log(`This is the location to where it was uploaded: ${loc}`);
     });
 
 
-Dealing With Metadata
----------------------
+#### `artifact~uploadFromFile(file)`
 
-Getting metadata:
+Uploads the file provided to the path that the [artifact](#artifact) object is set up to point to. It returns a Promise which will resolve to have a path to where it was uploaded to. This should be usable with [reference](#reference)`.initArtifact`.
 
-    // Get all of the artifact's metadata.
-    artifact.metadata.getAll().then((metadata) => {
-        console.log(metadata);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
+* `file` `{(string|stream~ReadStream)}` - If it is a string it should be the path to a file to upload.
+* Returns: `{Promise.<string>}`. Resolves with the path to where it was uploaded to. This should be usable by [reference](#reference)`.initArtifact`.
 
-    // Get one property of the artifact's metadata.
-    artifact.metadata.getProperty("tag1").then((property) => {
-        console.log(property);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
+Example:
 
-Creating and updating metadata on an artifact:
-
-    // Creates the mutable metadata property "tag" with value "Taggy-tag".
-    var tagProperty = {
-        value: "Taggy-tag"
-    };
-    artifact.metadata.createProperty("tag", tagProperty).then((response) => {
-        console.log(response);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-    // Creates the immutable metadata property "tag1" with value "Tag-taggy".
-    var tagProperty1 = {
-        immutable: true,
-        value: "Tag-taggy"
-    };
-    artifact.metadata.createProperty("tag1", tagProperty1).then((response) => {
-        console.log(response);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-    // Updates the metadata property "tag" with value "Data".
-    var tagUpdate = {
-        value: "Data"
-    };
-    artifact.metadata.updateProperty("tag", tagUpdate).then((updatedProperty) => {
-        console.log(updatedProperty);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-    // Updates all of the metadata on an artifact.
-    var tagUpdateAll = {
-        value: "Data",
-        value2: "Data2"
-    }
-    artifact.metadata.updateAll(tagUpdateAll).then((updatedProperties) => {
-        console.log(updatedProperties);
-    }, (err) => {
-        console.log("Hit an error: " + err);
-    });
-
-Deleting metadata:
-
-    // Deletes the metadata property "tag" (only deletes the property if its mutable).
-    artifact.metadata.deleteProperty("tag").then(() => {
-        console.log("Successfully deleted the property.");
-    }, (err) => {
-        console.log("Hit an error: " + err);
+    artifact.uploadFromFile("hello.txt").then((loc) => {
+        console.log(`This is the location to where it was uploaded: ${loc}`);
     });
 
 
-Searching
----------
+#### `artifact~download()`
 
-In order to search for an artifact, you need to first create an ArtifactSearch instance with the path you want to preform the search on.
+Downloads the contents of the artifact and returns them as a UTF8 encoded string.
 
-    var artifactSearch = reference.initSearch("pathy/");
+> **WARNING:** Do not use `artifact.download` for large artifacts. By default node's max memory size is 1.76GB (for 64 bit systems). This will blow up if your artifact is approaching that size. Use `artifact.downloadToFile` instead.
 
-Then you must construct an object with your search parameters.
+* Returns: `{Promise.<string>}`.
 
-    var searchParameters = {
-        search: "artifactName=*",   // Can be a string, an array of strings, or can also be undefined (optional).
-        sort: "version, VERSION",   // Can be a string or undefined (optional).
-        limit: 3                    // Can be a number or undefined (optional).
+Example:
+
+    artifact.download().then((content) => {
+        console.log(`This is the contents of that artifact: ${content}`);
+    });
+
+
+#### `artifact~downloadToFile(file)`
+
+Downloads the content of the aritfact to the file provided. This is a useful function to call for very large artifacts.
+
+* `file` `{(string|stream~WriteStream)}` - If it is a string it must be the path to a file you wish to download the content to.
+* Returns: `{Promise.<*>}`.
+
+Example:
+
+    artifact.downloadToFile("/my/file.txt").then(() => {
+        console.log("Success");
+    });
+
+
+### metadata
+
+An object which deals with metadata for a particular artifact.
+
+    var metadata = artifact.metadata;
+
+There are two structures used with metadata which are important.
+
+First, there is `metadataProperty` which is an object with the following properties.
+
+* `value` `{(string|boolean|int)}` - The value of the property.
+* `immutable` `{boolean}` - If set to true, you will no be able to alter this property. This property is optional and will default to false.
+
+Example:
+
+    var metadataProperty = {
+        value: "hello",
+        immutable: false
     };
 
-Finally, you can perform the search with your constructed parameters:
+The second one is called `metadataValues` which is an object whose keys are the name of a property and the value is a `metadataProperty`.
 
-    artifactSearch.search(searchParameters).then((results) => {
-        console.log(results);
-    }, (err) => {
-        console.log("Hit an error: " + err);
+Example:
+
+    var metadataValues = {
+        hi: {
+            value: "hello",
+            immutable: false
+        },
+        version: {
+            value: "1.0.0",
+            immutable: true
+        }
+    };
+
+#### `metadata.getAll()`
+
+Gets all metadata for an [artifact](#artifact).
+
+* Returns: `{Promise.<Object>}` - Resolves with a metadataValues object.
+
+Example:
+
+    metadata.getAll().then((metadataValues) => {
+        console.log(metadataValues.hi.value); // "hello"
     });
 
-It will return a list of relative links for artifacts that matched the provided search.
+
+#### `metadata.getProperty(name)`
+
+Gets a specific metadataProperty.
+
+* `name` `{string}` - The name of the property you wish to get.
+* Returns: `{Promise.<Object>}` - Resolves with a metadataProperty.
+
+Example:
+
+    metadata.getProperty("hi").then((metadataProperty) => {
+        console.log(metadataProperty.value); // "hello"
+    });
+
+
+#### `metadata.updateAll(metadataValues)`
+
+Updates all metadata at once for a particular artifact. This should be used when bulk updates need to be made. For more information see the [Shelf Docs](https://github.com/not-nexus/shelf/blob/master/docs/api/metadata.md).
+
+* `metadataValues` `{Object}` - A metadataValues object.
+* Returns: `{Promise.<Object>}` - Resolves with a metadataValues object.
+
+Example:
+
+    /**
+     * I only want to add a couple of properties without deleting any. In this case
+     * I get the metadataValues object first.
+     */
+     metadata.getAll().then((metadataValues) => {
+        metadataValues.someNewProperty = {
+            value: 1
+        };
+        metadataValues.someOtherNewProperty = {
+            value: 2
+        };
+
+        return metadata.updateAll(metadataValues);
+     }).then((metadataValues) => {
+        console.log("Success");
+     });
+
+
+#### `metadata.updateProperty(name, metadataProperty)`
+
+Updates a single metadata property. This function will also create the property if it doesn't exist.
+
+* `name` `{string}` - The name of the property you wish to update.
+* `metadataProperty` `{Object}` - A metadataProperty object.
+* Returns: `{Promise.<Object>}` - Resolves with a metadataProperty object.
+
+Example:
+
+    var metadataProperty = {
+        value: "something",
+        immutable: true
+    };
+    metadata.updateProperty("someProperty", metadataProperty).then((someProperty) => {
+        console.log("Success");
+    });
+
+
+#### `metadata.createProperty(name, metadataProperty)`
+
+Creates a single metadata property. This will error if the property already exists.
+
+* `name` `{string}` - The name of the property you wish to create.
+* `metadataProperty` `{Object}` - A metadataProperty object.
+* Returns: `{Promise.<Object>}` - Resolves with a metadataProperty object.
+
+Example:
+
+    var metadataProperty = {
+        value: "something",
+        immutable: true
+    };
+    metadata.createProperty("someProperty", metadataProperty).then((someProperty) => {
+        console.log("Success");
+    });
+
+
+#### `metadata.deleteProperty(name)`
+
+Deletes a single property.
+
+* `name` `{string}` - The name of the property you wish to delete.
+* Returns: `{Promise.<*>}`
+
+Example:
+
+    metadata.deleteProperty("someProperty").then(() => {
+        console.log("Success");
+    });
+
+
+### artifactSearch
+
+Handles searching for artifacts by searchParameters.
+
+* `search` `{(string|Array.<string>)}` - Each search item should be in the form `<metadataPropertyName><typeOfSearch><metadataValue>`. For example, if I wanted artifacts with a version of "1.0.0" I could search using `version=1.0.0`. For more information see [the Shelf Documentation][shelf-search].
+* `sort` `{(string|Array.<string>)}` - Each sort item should be in the form `<metadataProperty, <sortFlags>...`. For more information see [the Shelf Documentation][shelf-search].
+* `limit` `{int}` - The most amount of links  you would like back from a search.
+
+
+#### `artifactSearch.search(searchParameters)`
+
+Searches for artifacts.
+
+* `searchParameters` `{Object}` - A searchParameters object.
+* Returns: `{Promise.<Array.<string>>}` - A list of links. These links can be given directly to [reference](#reference)`.initArtifact` for uploading and downloading.
+
+Example:
+
+    searchParameters = {
+        search: [
+            "version~=1.0.0",
+            "artifactName=john*"
+        ],
+        sort: "version, VER, DESC",
+        limit: 1
+    };
+    artifactSearch.search(searchParameters).then((linkList) => {
+        console.log(`Got links back: ${linkList}`);
+
+        linkList.forEach((link) => {
+            artifact = reference.initArtifact(link);
+
+            // Do something with the artifact.
+        });
+    });
 
 
 Errors
@@ -250,3 +362,6 @@ Shelf Lib will reject with special `ShelfError` errors. These inherit from `Erro
     });
 
 For more information see the [error module](https://github.com/not-nexus/shelf-lib-js/blob/master/lib/error.js).
+
+
+[shelf-search]: https://github.com/not-nexus/shelf/blob/master/docs/api/search.md
