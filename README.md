@@ -53,7 +53,7 @@ Example:
 
 #### `shelfLib~initReference(refName, authToken)`
 
-* `refName` `{string}` - Could also be called "bucket", "storage" or "shelf". This represents a specific storage space.
+* `refName` `{string}` - This represents a specific storage space. It is also referred to as "bucket", "storage" or "shelf".
 * `authToken` `{string}` - The authentication token used to authenticate with the `reference`.
 * Returns: `{Object}` - A [reference](#reference) object.
 
